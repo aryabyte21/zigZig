@@ -24,7 +24,7 @@ export default async function InboxPage() {
               </svg>
             </div>
             <div>
-              <h1 className="text-xl font-bold">Inbox</h1>
+              <h1 className="text-xl font-bold">SuperDM</h1>
               <p className="text-xs text-muted-foreground">
                 AI-powered conversations
               </p>

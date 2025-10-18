@@ -1,7 +1,9 @@
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 import { Badge } from "./ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import Link from "next/link";
+import Image from "next/image";
 import { 
   ArrowRight, Sparkles, Zap, Users, Brain, Palette, FileText, MessageSquare,
   Briefcase, Heart, Target, Rocket, Search, Bot, Wand2, TrendingUp,
@@ -57,6 +59,66 @@ export function Hero() {
             </Button>
           </div>
         </div>
+      </div>
+
+      {/* Ghibli Avatar Showcase - Subtle */}
+      <div className="w-full max-w-4xl">
+        <Card className="bg-gradient-to-r from-purple-500/5 to-pink-500/5 border-purple-500/10">
+          <CardContent className="p-8">
+            <div className="flex flex-col md:flex-row items-center gap-8">
+              {/* Avatar Examples */}
+              <div className="flex-shrink-0">
+                <div className="flex -space-x-4">
+                  {[
+                    { name: "avatar1.png", delay: "0s" },
+                    { name: "avatar2.png", delay: "0.1s" },
+                    { name: "avatar3.png", delay: "0.2s" },
+                    { name: "avatar4.png", delay: "0.3s" },
+                  ].map((avatar, index) => (
+                    <div
+                      key={avatar.name}
+                      className="group relative animate-fade-in"
+                      style={{ animationDelay: avatar.delay }}
+                    >
+                      <div className="relative h-24 w-24 rounded-full overflow-hidden border-4 border-background shadow-xl group-hover:scale-110 group-hover:z-10 transition-all duration-300 ring-2 ring-purple-500/30 group-hover:ring-purple-500/60 group-hover:shadow-2xl">
+                        <Image
+                          src={`/avatars/${avatar.name}`}
+                          alt={`Portfolio Avatar Example ${index + 1}`}
+                          fill
+                          className="object-cover"
+                          sizes="80px"
+                        />
+                        {/* Subtle sparkle on hover */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-purple-600/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Text Content */}
+              <div className="flex-1 text-center md:text-left">
+                <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
+                  <Palette className="h-4 w-4 text-purple-600" />
+                  <Badge variant="secondary" className="text-xs bg-purple-500/10 border-purple-500/20">
+                    Studio Ghibli Style
+                  </Badge>
+                </div>
+                <h3 className="text-xl font-bold mb-2">
+                  AI-Generated Portfolio Avatars
+                </h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Every portfolio gets a beautiful Ghibli-style avatar automatically generated from your photo. 
+                  Professional, artistic, and unforgettable.
+                </p>
+                <div className="flex items-center justify-center md:justify-start gap-2 text-xs text-muted-foreground">
+                  <Sparkles className="h-3 w-3 text-yellow-500" />
+                  <span>Powered by Fal.AI image generation</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Funny Stats Section */}
