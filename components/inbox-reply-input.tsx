@@ -230,33 +230,25 @@ export function InboxReplyInput({ conversationId, userId, onMessageSent }: Inbox
   };
 
   return (
-    <div className="space-y-3">
-      {/* Smart Reply Suggestions */}
+    <div className="space-y-2">
+      {/* Smart Reply Suggestions - Compact */}
       {showSuggestions && suggestions.length > 0 && !message && (
-        <div className="p-3 bg-muted/30 rounded-lg border-l-4 border-primary">
-          <div className="flex items-center gap-2 mb-3">
-            <Bot className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium text-muted-foreground">
-              {isLoadingSuggestions ? "Generating suggestions..." : "Smart Replies"}
-            </span>
-          </div>
+        <div className="flex items-center gap-2 p-2 bg-muted/50 rounded border border-border">
+          <Bot className="h-3 w-3 text-muted-foreground flex-shrink-0" />
           {isLoadingSuggestions ? (
-            <div className="flex gap-2">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-8 w-32 bg-muted rounded animate-pulse" />
-              ))}
-            </div>
+            <span className="text-xs text-muted-foreground">Loading...</span>
           ) : (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1 flex-1 min-w-0">
               {suggestions.map((suggestion, index) => (
                 <Badge
                   key={index}
-                  variant="outline"
-                  className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors px-3 py-1.5 text-xs"
+                  variant="secondary"
+                  className="cursor-pointer hover:bg-foreground hover:text-background transition-colors text-xs h-6 px-2 truncate max-w-[200px]"
                   onClick={() => {
                     setMessage(suggestion);
                     setShowSuggestions(false);
                   }}
+                  title={suggestion}
                 >
                   {suggestion}
                 </Badge>
@@ -271,11 +263,11 @@ export function InboxReplyInput({ conversationId, userId, onMessageSent }: Inbox
         <div className="flex-1 relative">
           <Textarea
             ref={textareaRef}
-            placeholder="Type your professional reply..."
+            placeholder="Type your reply..."
             value={message}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            className="min-h-[60px] max-h-[200px] resize-none pr-20"
+            className="min-h-[44px] max-h-[120px] resize-none pr-20 text-sm"
             disabled={isSending}
           />
           
@@ -349,26 +341,16 @@ export function InboxReplyInput({ conversationId, userId, onMessageSent }: Inbox
         <Button
           onClick={handleSend}
           disabled={!message.trim() || isSending}
-          size="lg"
-          className="self-end px-6"
+          size="default"
+          className="self-end px-4"
         >
           {isSending ? (
-            <Loader2 className="h-5 w-5 animate-spin" />
+            <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            <Send className="h-5 w-5" />
+            <Send className="h-4 w-4" />
           )}
         </Button>
       </div>
-      
-      {/* Helper Text */}
-      <p className="text-xs text-muted-foreground text-center flex items-center justify-center gap-1">
-        <Sparkles className="h-3 w-3" />
-        <span>Context-aware AI • Click</span>
-        <Lightbulb className="h-3 w-3 text-primary" />
-        <span>for completions •</span>
-        <Sparkles className="h-3 w-3 text-orange-500" />
-        <span>to enhance</span>
-      </p>
     </div>
   );
 }

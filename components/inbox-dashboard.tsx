@@ -144,14 +144,14 @@ export function InboxDashboard({ userId }: InboxDashboardProps) {
       {/* Conversations Sidebar */}
       <div className="w-80 border-r border-border flex flex-col flex-shrink-0 max-h-full">
         {/* Search */}
-        <div className="p-4 border-b border-border">
+        <div className="p-3 border-b border-border">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search conversations..."
+              placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 border-0 bg-muted/50"
+              className="pl-10"
             />
           </div>
         </div>
@@ -186,27 +186,27 @@ export function InboxDashboard({ userId }: InboxDashboardProps) {
                     key={conversation._id}
                     onClick={() => handleSelectConversation(conversation._id)}
                     className={`
-                      flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all duration-200
+                      flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-colors
                       ${isSelected 
-                        ? "bg-primary/10 border-l-4 border-primary shadow-sm" 
-                        : "hover:bg-muted/50 border-l-4 border-transparent"
+                        ? "bg-muted border-l-2 border-foreground" 
+                        : "hover:bg-muted/50"
                       }
                     `}
                   >
-                    <Avatar className="h-10 w-10 flex-shrink-0">
-                      <AvatarFallback className={isSelected ? "bg-primary/20 text-primary" : ""}>
+                    <Avatar className="h-9 w-9 flex-shrink-0">
+                      <AvatarFallback className={`text-sm ${isSelected ? "bg-foreground text-background" : "bg-muted"}`}>
                         {conversation.visitorName.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <h4 className={`font-medium text-sm truncate ${isSelected ? "text-primary" : ""}`}>
+                      <div className="flex items-center justify-between mb-0.5">
+                        <h4 className={`font-medium text-sm truncate ${isSelected ? "font-semibold" : ""}`}>
                           {conversation.visitorName}
                         </h4>
                         <div className="flex items-center gap-1">
                           {conversation.unreadCount > 0 && (
-                            <div className="bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
+                            <div className="bg-foreground text-background text-xs font-medium rounded-full h-4 min-w-[16px] px-1 flex items-center justify-center">
                               {conversation.unreadCount}
                             </div>
                           )}
@@ -216,14 +216,13 @@ export function InboxDashboard({ userId }: InboxDashboardProps) {
                         </div>
                       </div>
                       
-                      <div className="flex items-center gap-2 mt-1">
+                      <div className="flex items-center gap-1.5">
                         <CategoryIcon className="h-3 w-3 text-muted-foreground" />
-                        <span className="text-xs text-muted-foreground capitalize">
+                        <span className="text-xs text-muted-foreground capitalize truncate">
                           {conversation.category}
                         </span>
                         {conversation.priority >= 4 && (
-                          <Badge variant="secondary" className="h-4 text-xs px-1">
-                            <Zap className="h-2 w-2 mr-1" />
+                          <Badge variant="secondary" className="h-4 text-xs px-1.5">
                             High
                           </Badge>
                         )}
@@ -233,11 +232,13 @@ export function InboxDashboard({ userId }: InboxDashboardProps) {
                 );
               })
             ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <Mail className="h-8 w-8 mx-auto mb-2" />
-                <p className="text-sm font-medium">No conversations found</p>
-                <p className="text-xs mt-1">
-                  {searchQuery ? "Try adjusting your search" : "Conversations will appear here"}
+              <div className="text-center py-8 px-4">
+                <Mail className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                <p className="text-sm font-medium mb-1">
+                  No conversations
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {searchQuery ? "Try adjusting your search" : "Messages will appear here"}
                 </p>
               </div>
             )}
@@ -250,19 +251,21 @@ export function InboxDashboard({ userId }: InboxDashboardProps) {
         {selectedConv ? (
           <>
             {/* Header */}
-            <div className="flex-shrink-0 p-6 border-b border-border bg-gradient-to-r from-background to-muted/20 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Avatar className="h-12 w-12">
-                  <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+            <div className="flex-shrink-0 p-4 border-b border-border flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-10 w-10">
+                  <AvatarFallback className="bg-foreground text-background font-medium">
                     {selectedConv.visitorName.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h2 className="text-lg font-semibold">{selectedConv.visitorName}</h2>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <h2 className="text-base font-semibold">
+                    {selectedConv.visitorName}
+                  </h2>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <span>{selectedConv.visitorEmail}</span>
                     {selectedConv.unreadCount > 0 && (
-                      <Badge variant="secondary" className="h-5 text-xs">
+                      <Badge variant="secondary" className="h-4 text-xs px-1.5">
                         {selectedConv.unreadCount} new
                       </Badge>
                     )}
@@ -277,13 +280,13 @@ export function InboxDashboard({ userId }: InboxDashboardProps) {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => handleArchive(selectedConv._id, "archive")}>
+                  <DropdownMenuItem onClick={() => handleArchive(selectedConv._id, "archive")} className="cursor-pointer">
                     <Archive className="h-4 w-4 mr-2" />
                     Archive
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleArchive(selectedConv._id, "spam")}>
+                  <DropdownMenuItem onClick={() => handleArchive(selectedConv._id, "spam")} className="cursor-pointer text-red-600">
                     <AlertTriangle className="h-4 w-4 mr-2" />
-                    Mark as Spam
+                    Spam
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -298,9 +301,9 @@ export function InboxDashboard({ userId }: InboxDashboardProps) {
             </div> */}
 
             {/* Messages */}
-            <div className="flex-1 overflow-hidden bg-gradient-to-b from-muted/5 to-background min-h-0">
-              <div className="h-full overflow-y-auto p-6">
-                <div className="space-y-4 max-w-4xl mx-auto pb-4">
+            <div className="flex-1 overflow-hidden bg-background min-h-0">
+              <div className="h-full overflow-y-auto p-4">
+                <div className="space-y-3 max-w-4xl mx-auto pb-4">
                   {!messages ? (
                     // Loading skeleton for messages
                     Array.from({ length: 4 }).map((_, i) => (
@@ -319,18 +322,16 @@ export function InboxDashboard({ userId }: InboxDashboardProps) {
                       return (
                         <div
                           key={message._id}
-                          className={`flex gap-3 ${isOwner ? "flex-row-reverse" : ""}`}
+                          className={`flex gap-2.5 ${isOwner ? "flex-row-reverse" : ""}`}
                         >
                           <Avatar className="h-8 w-8 flex-shrink-0">
                             <AvatarFallback className={
-                              message.aiGenerated 
-                                ? "bg-primary text-primary-foreground" 
-                                : isOwner
-                                ? "bg-primary/10 text-primary"
-                                : "bg-muted"
+                              message.aiGenerated || isOwner
+                                ? "bg-foreground text-background text-xs" 
+                                : "bg-muted text-xs"
                             }>
                               {message.aiGenerated ? (
-                                <Bot className="h-4 w-4" />
+                                <Bot className="h-3.5 w-3.5" />
                               ) : (
                                 message.senderName.charAt(0).toUpperCase()
                               )}
@@ -338,7 +339,6 @@ export function InboxDashboard({ userId }: InboxDashboardProps) {
                           </Avatar>
 
                           <div className={`max-w-[70%] ${isOwner ? "text-right" : ""}`}>
-                            {/* Sender name for consecutive messages */}
                             {!isOwner && (
                               <p className="text-xs font-medium text-muted-foreground mb-1 px-1">
                                 {message.senderName}
@@ -346,18 +346,24 @@ export function InboxDashboard({ userId }: InboxDashboardProps) {
                             )}
                             
                             <div className={`
-                              rounded-2xl px-4 py-3 text-sm shadow-sm border-0 transition-all duration-200
+                              rounded-lg px-3 py-2 text-sm
                               ${isOwner 
-                                ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-blue-500/25" 
-                                : "bg-white border border-gray-200 text-gray-900 shadow-gray-200/50"
+                                ? "bg-foreground text-background" 
+                                : "bg-muted"
                               }
                             `}>
+                              {message.aiGenerated && (
+                                <Badge variant="secondary" className="text-xs mb-1.5">
+                                  <Bot className="h-2.5 w-2.5 mr-1" />
+                                  AI
+                                </Badge>
+                              )}
                               <p className="whitespace-pre-wrap leading-relaxed">
                                 {message.content}
                               </p>
                             </div>
                             
-                            <div className={`flex items-center gap-2 mt-2 px-1 ${isOwner ? "justify-end" : ""}`}>
+                            <div className={`flex items-center gap-1.5 mt-1 px-1 ${isOwner ? "justify-end" : ""}`}>
                               <span className="text-xs text-muted-foreground">
                                 {new Date(message._creationTime).toLocaleTimeString([], { 
                                   hour: '2-digit', 
@@ -365,17 +371,10 @@ export function InboxDashboard({ userId }: InboxDashboardProps) {
                                 })}
                               </span>
                               
-                              {message.aiGenerated && (
-                                <Badge variant="secondary" className="text-xs bg-purple-100 text-purple-700 border-purple-200">
-                                  <Bot className="h-3 w-3 mr-1" />
-                                  AI
-                                </Badge>
-                              )}
-                              
                               {isOwner && message.readAt && (
-                                <div className="text-xs text-blue-600 flex items-center gap-0.5">
+                                <div className="text-xs flex items-center gap-0.5 text-muted-foreground">
                                   <CheckCheck className="h-3 w-3" />
-                                  Read
+                                  <span>Read</span>
                                 </div>
                               )}
                             </div>
@@ -385,11 +384,13 @@ export function InboxDashboard({ userId }: InboxDashboardProps) {
                     })
                   ) : (
                     <div className="h-full flex items-center justify-center">
-                      <div className="text-center">
-                        <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                        <h3 className="text-lg font-semibold mb-2">Start the conversation</h3>
-                        <p className="text-muted-foreground">
-                          Send a message to begin your professional dialogue
+                      <div className="text-center max-w-md">
+                        <MessageSquare className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                        <h3 className="text-base font-semibold mb-2">
+                          Start the conversation
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          Send a message to begin
                         </p>
                       </div>
                     </div>
@@ -400,7 +401,7 @@ export function InboxDashboard({ userId }: InboxDashboardProps) {
             </div>
 
             {/* Reply Input */}
-            <div className="border-t p-6 bg-gradient-to-t from-muted/5 to-background flex-shrink-0">
+            <div className="border-t border-border p-4 bg-background flex-shrink-0">
               <div className="max-w-4xl mx-auto">
                 <InboxReplyInput 
                   conversationId={selectedConv._id}
@@ -413,22 +414,15 @@ export function InboxDashboard({ userId }: InboxDashboardProps) {
             </div>
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-muted/20 to-background">
+          <div className="flex-1 flex items-center justify-center">
             <div className="text-center max-w-md mx-auto p-8">
-              <div className="relative mb-6">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full blur-2xl opacity-20"></div>
-                <MessageSquare className="relative h-16 w-16 text-blue-500 mx-auto" />
-              </div>
-              <h3 className="text-xl font-semibold mb-3 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+              <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">
                 Select a conversation
               </h3>
-              <p className="text-muted-foreground mb-4 leading-relaxed">
-                Choose a conversation from the sidebar to view messages and reply with AI-powered suggestions
+              <p className="text-sm text-muted-foreground">
+                Choose a conversation from the sidebar to view and reply
               </p>
-              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                <Zap className="h-4 w-4 text-blue-500" />
-                <span>AI-enhanced messaging • Context-aware replies</span>
-              </div>
             </div>
           </div>
         )}

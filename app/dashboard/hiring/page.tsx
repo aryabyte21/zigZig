@@ -101,17 +101,17 @@ export default function HiringPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Hiring Dashboard</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage your job postings and find the perfect candidates
+          <h1 className="text-2xl font-bold">Hiring Dashboard</h1>
+          <p className="text-sm text-muted-foreground">
+            Manage your job postings and find candidates
           </p>
         </div>
 
         {/* Create New Job Button */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button size="lg" className="gap-2">
-              <Plus className="h-5 w-5" />
+            <Button size="default" className="gap-2">
+              <Plus className="h-4 w-4" />
               Create New Job
             </Button>
           </DialogTrigger>
@@ -119,7 +119,7 @@ export default function HiringPage() {
             <DialogHeader>
               <DialogTitle>Create Job Posting</DialogTitle>
               <DialogDescription>
-                Paste your job description and we'll automatically extract requirements and find matching candidates.
+                Paste your job description to extract requirements and find matching candidates.
               </DialogDescription>
             </DialogHeader>
             <RecruiterJobSelector
@@ -136,21 +136,19 @@ export default function HiringPage() {
 
       {/* Job List */}
       {jobs.length === 0 ? (
-        <div className="text-center py-20">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-            <Briefcase className="h-8 w-8 text-primary" />
-          </div>
-          <h3 className="text-xl font-semibold mb-2">No Job Postings Yet</h3>
-          <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-            Create your first job posting to start finding and matching with top candidates.
+        <div className="text-center py-16">
+          <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+          <h3 className="text-lg font-semibold mb-2">No job postings</h3>
+          <p className="text-sm text-muted-foreground mb-4 max-w-md mx-auto">
+            Create your first job posting to find matching candidates
           </p>
-          <Button onClick={() => setIsDialogOpen(true)} size="lg" className="gap-2">
-            <Plus className="h-5 w-5" />
-            Create Your First Job
+          <Button onClick={() => setIsDialogOpen(true)} size="default" className="gap-2">
+            <Plus className="h-4 w-4" />
+            Create Job
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {jobs.map((job) => (
             <JobCard
               key={job.id}

@@ -82,13 +82,7 @@ export default function JobMatchingPage() {
         candidateUserId: match.candidateUserId,
       });
 
-      const statusLabels = {
-        liked: "liked",
-        passed: "passed",
-        super_liked: "super liked ⭐",
-      };
-
-      toast.success(`Candidate ${statusLabels[newStatus]}!`);
+      // Don't show toast here - CardStack already handles it
     } catch (error) {
       console.error("Swipe error:", error);
       toast.error("Failed to update match status");
@@ -128,16 +122,16 @@ export default function JobMatchingPage() {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between pb-4 border-b">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => router.push('/dashboard/hiring')}
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold">{job.title}</h1>
+            <h1 className="text-xl font-bold">{job.title}</h1>
             {job.company && (
               <p className="text-sm text-muted-foreground">{job.company}</p>
             )}
@@ -147,22 +141,22 @@ export default function JobMatchingPage() {
         {/* Stats */}
         <div className="flex items-center gap-4">
           <Card className="px-4 py-2">
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-muted-foreground" />
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1.5">
+                <Users className="h-3.5 w-3.5 text-muted-foreground" />
                 <span className="text-sm font-medium">{job.total_matches}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Heart className="h-4 w-4 text-green-600" />
-                <span className="text-sm font-medium text-green-600">{likedCount}</span>
+              <div className="flex items-center gap-1.5">
+                <Heart className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-sm font-medium">{likedCount}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Star className="h-4 w-4 text-blue-600" />
-                <span className="text-sm font-medium text-blue-600">{superLikedCount}</span>
+              <div className="flex items-center gap-1.5">
+                <Star className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-sm font-medium">{superLikedCount}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <X className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium text-muted-foreground">{passedCount}</span>
+              <div className="flex items-center gap-1.5">
+                <X className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-sm font-medium">{passedCount}</span>
               </div>
             </div>
           </Card>
@@ -214,13 +208,11 @@ export default function JobMatchingPage() {
                 onSwipe={handleSwipe}
               />
             ) : (
-              <div className="text-center py-20">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
-                  <Users className="h-8 w-8 text-muted-foreground" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">No Pending Matches</h3>
-                <p className="text-muted-foreground">
-                  All candidates have been reviewed!
+              <div className="text-center py-16">
+                <Users className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                <h3 className="text-lg font-semibold mb-2">No pending matches</h3>
+                <p className="text-sm text-muted-foreground">
+                  All candidates have been reviewed
                 </p>
               </div>
             )}
@@ -235,13 +227,11 @@ export default function JobMatchingPage() {
               emptyMessage="No liked candidates yet"
             />
           ) : (
-            <div className="text-center py-20">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
-                <Heart className="h-8 w-8 text-green-600" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">No Liked Candidates Yet</h3>
-              <p className="text-muted-foreground">
-                Candidates you like will appear here.
+            <div className="text-center py-16">
+              <Heart className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+              <h3 className="text-lg font-semibold mb-2">No liked candidates</h3>
+              <p className="text-sm text-muted-foreground">
+                Candidates you like will appear here
               </p>
             </div>
           )}
@@ -254,13 +244,11 @@ export default function JobMatchingPage() {
           title="Liked Candidates"
           emptyMessage="No liked candidates yet"
         />          ) : (
-            <div className="text-center py-20">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-4">
-                <Star className="h-8 w-8 text-blue-600" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">No Super Liked Candidates Yet</h3>
-              <p className="text-muted-foreground">
-                Your top candidates will appear here.
+            <div className="text-center py-16">
+              <Star className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+              <h3 className="text-lg font-semibold mb-2">No super liked candidates</h3>
+              <p className="text-sm text-muted-foreground">
+                Your top candidates will appear here
               </p>
             </div>
           )}
@@ -273,13 +261,11 @@ export default function JobMatchingPage() {
           title="Liked Candidates"
           emptyMessage="No liked candidates yet"
         />          ) : (
-            <div className="text-center py-20">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
-                <X className="h-8 w-8 text-muted-foreground" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">No Passed Candidates</h3>
-              <p className="text-muted-foreground">
-                Candidates you pass on will appear here.
+            <div className="text-center py-16">
+              <X className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+              <h3 className="text-lg font-semibold mb-2">No passed candidates</h3>
+              <p className="text-sm text-muted-foreground">
+                Candidates you pass on will appear here
               </p>
             </div>
           )}
