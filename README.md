@@ -1,11 +1,7 @@
-<a href="https://demo-nextjs-with-supabase.vercel.app/">
-  <img alt="Next.js and Supabase Starter Kit - the fastest way to build apps with Next.js and Supabase" src="https://demo-nextjs-with-supabase.vercel.app/opengraph-image.png">
-  <h1 align="center">Next.js and Supabase Starter Kit</h1>
-</a>
-
-<p align="center">
- The fastest way to build apps with Next.js and Supabase
-</p>
+<div align="center">
+  <h1>zigZig - AI-Powered Career Hub</h1>
+  <p>Build your dream career with AI. Generate portfolios, optimize resumes, find jobs, and land interviews.</p>
+</div>
 
 <p align="center">
   <a href="#features"><strong>Features</strong></a> ·
@@ -19,19 +15,29 @@
 
 ## Features
 
-- Works across the entire [Next.js](https://nextjs.org) stack
-  - App Router
-  - Pages Router
-  - Middleware
-  - Client
-  - Server
-  - It just works!
-- supabase-ssr. A package to configure Supabase Auth to use cookies
-- Password-based authentication block installed via the [Supabase UI Library](https://supabase.com/ui/docs/nextjs/password-based-auth)
-- Styling with [Tailwind CSS](https://tailwindcss.com)
-- Components with [shadcn/ui](https://ui.shadcn.com/)
-- Optional deployment with [Supabase Vercel Integration and Vercel deploy](#deploy-your-own)
-  - Environment variables automatically assigned to Vercel project
+### 🚀 AI-Powered Portfolio Generation
+- **Smart Resume Parsing**: Upload PDF/DOCX resumes or paste text for automatic data extraction
+- **Ghibli-Style Avatars**: Generate beautiful Studio Ghibli-inspired profile pictures using Fal.AI
+- **Enhanced Content**: AI-powered content optimization using Groq and Google Gemini
+- **Professional Templates**: Clean, modern portfolio designs inspired by hello.cv
+
+### 🔍 Intelligent Job Search
+- **Semantic Search**: Find relevant job opportunities using Exa.ai's advanced search
+- **Skills Matching**: AI-powered job recommendations based on your profile
+- **Company Insights**: Get detailed information about potential employers
+
+### 🛠 Technical Stack
+- **Frontend**: Next.js 15 with App Router, TypeScript, Tailwind CSS
+- **UI Components**: shadcn/ui with Inter font (Spotify-inspired design)
+- **Backend**: Supabase (Auth, Database, Storage)
+- **AI Integration**: Groq, Google Gemini, Fal.AI, Exa.ai
+- **Authentication**: OAuth (Google, GitHub) + Email/Password
+
+### 📱 User Experience
+- **Responsive Design**: Works perfectly on desktop, tablet, and mobile
+- **Dark/Light Mode**: System-aware theme switching
+- **Real-time Updates**: Live portfolio updates and notifications
+- **Professional URLs**: Custom portfolio slugs (e.g., zigzig.com/portfolio/john-doe)
 
 ## Demo
 
@@ -73,18 +79,26 @@ If you wish to just develop locally and not deploy to Vercel, [follow the steps 
    cd with-supabase-app
    ```
 
-4. Rename `.env.example` to `.env.local` and update the following:
+4. Create a `.env.local` file and add the following environment variables:
 
   ```env
-  NEXT_PUBLIC_SUPABASE_URL=[INSERT SUPABASE PROJECT URL]
-  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=[INSERT SUPABASE PROJECT API PUBLISHABLE OR ANON KEY]
-  ```
-  > [!NOTE]
-  > This example uses `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, which refers to Supabase's new **publishable** key format.
-  > Both legacy **anon** keys and new **publishable** keys can be used with this variable name during the transition period. Supabase's dashboard may show `NEXT_PUBLIC_SUPABASE_ANON_KEY`; its value can be used in this example.
-  > See the [full announcement](https://github.com/orgs/supabase/discussions/29260) for more information.
+  # Supabase Configuration (Required)
+  NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_anon_key
 
-  Both `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` can be found in [your Supabase project's API settings](https://supabase.com/dashboard/project/_?showConnect=true)
+  # AI API Keys (Required for full functionality)
+  GROQ_API_KEY=your_groq_api_key
+  GEMINI_API_KEY=your_google_gemini_api_key
+  FAL_KEY=your_fal_ai_api_key
+  EXA_API_KEY=your_exa_ai_api_key
+  ```
+
+  **Where to get API keys:**
+  - **Supabase**: [Create a project](https://database.new) and get keys from [API settings](https://supabase.com/dashboard/project/_?showConnect=true)
+  - **Groq**: [Get API key](https://console.groq.com/keys) (Free tier available)
+  - **Google Gemini**: [Get API key](https://aistudio.google.com/app/apikey) (Free tier available)
+  - **Fal.AI**: [Get API key](https://fal.ai/dashboard) (Free credits included)
+  - **Exa.ai**: [Get API key](https://dashboard.exa.ai/) (Free tier available)
 
 5. You can now run the Next.js local development server:
 

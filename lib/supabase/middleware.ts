@@ -7,14 +7,49 @@ export async function updateSession(request: NextRequest) {
     request,
   });
 
-  // If the env vars are not set, skip middleware check. You can remove this
-  // once you setup the project.
+  // If the env vars are not set, skip middleware check
   if (!hasEnvVars) {
     return supabaseResponse;
   }
 
-  // With Fluid compute, don't put this client in a global environment
-  // variable. Always create a new one on each request.
+  // Define public routes that should NEVER require authentication
+  const publicRoutes = [
+    "/",
+    "/auth/login",
+    "/auth/sign-up", 
+    "/auth/forgot-password",
+    "/auth/update-password",
+    "/auth/error",
+    "/auth/confirm",
+    "/auth/sign-up-success",
+    "/login",
+    "/portfolio",
+  ];
+
+  // Check if current path is public
+  const isPublicRoute = publicRoutes.some(route => {
+    if (route === "/") {
+      return request.nextUrl.pathname === "/";
+    }
+    return request.nextUrl.pathname === route || 
+           request.nextUrl.pathname.startsWith(route + "/");
+  });
+
+  console.log("Middleware - Path:", request.nextUrl.pathname);
+  console.log("Middleware - isPublicRoute:", isPublicRoute);
+
+  // For public routes, return immediately without any auth checks
+  if (isPublicRoute) {
+    console.log("Middleware - Allowing public route");
+    // Clear any stale auth cookies for public routes
+    if (request.nextUrl.pathname === "/") {
+      supabaseResponse.cookies.delete('sb-access-token');
+      supabaseResponse.cookies.delete('sb-refresh-token');
+    }
+    return supabaseResponse;
+  }
+
+  // Only for protected routes, check authentication
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
@@ -38,39 +73,23 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
-  // Do not run code between createServerClient and
-  // supabase.auth.getClaims(). A simple mistake could make it very hard to debug
-  // issues with users being randomly logged out.
-
-  // IMPORTANT: If you remove getClaims() and you use server-side rendering
-  // with the Supabase client, your users may be randomly logged out.
+  // Only check authentication for protected routes
   const { data } = await supabase.auth.getClaims();
   const user = data?.claims;
 
+  console.log("Middleware - User authenticated:", !!user);
+
+  // Only redirect to login if user is not authenticated and trying to access protected routes
   if (
-    request.nextUrl.pathname !== "/" &&
     !user &&
-    !request.nextUrl.pathname.startsWith("/login") &&
-    !request.nextUrl.pathname.startsWith("/auth")
+    (request.nextUrl.pathname.startsWith("/dashboard") ||
+     request.nextUrl.pathname.startsWith("/protected"))
   ) {
-    // no user, potentially respond by redirecting the user to the login page
+    console.log("Middleware - Redirecting to login");
     const url = request.nextUrl.clone();
     url.pathname = "/auth/login";
     return NextResponse.redirect(url);
   }
-
-  // IMPORTANT: You *must* return the supabaseResponse object as it is.
-  // If you're creating a new response object with NextResponse.next() make sure to:
-  // 1. Pass the request in it, like so:
-  //    const myNewResponse = NextResponse.next({ request })
-  // 2. Copy over the cookies, like so:
-  //    myNewResponse.cookies.setAll(supabaseResponse.cookies.getAll())
-  // 3. Change the myNewResponse object to fit your needs, but avoid changing
-  //    the cookies!
-  // 4. Finally:
-  //    return myNewResponse
-  // If this is not done, you may be causing the browser and server to go out
-  // of sync and terminate the user's session prematurely!
 
   return supabaseResponse;
 }

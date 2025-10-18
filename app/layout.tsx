@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Inter, DM_Sans } from "next/font/google";
 import { ThemeProvider } from "next-themes";
+import { Toaster } from "sonner";
+import { ConvexClientProvider } from "@/components/convex-provider";
 import "./globals.css";
 
 const defaultUrl = process.env.VERCEL_URL
@@ -9,14 +11,38 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Next.js and Supabase Starter Kit",
-  description: "The fastest way to build apps with Next.js and Supabase",
+  title: "ZigZig - AI-Powered Career Hub",
+  description: "Build your dream career with AI. Generate portfolios, optimize resumes, find jobs, and land interviews with ZigZig's cutting-edge AI tools.",
+  keywords: ["AI", "career", "portfolio", "resume", "job search", "interview", "professional development"],
+  authors: [{ name: "ZigZig Team" }],
+  openGraph: {
+    title: "ZigZig - AI-Powered Career Hub",
+    description: "Build your dream career with AI. Generate portfolios, optimize resumes, find jobs, and land interviews.",
+    url: defaultUrl,
+    siteName: "ZigZig",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ZigZig - AI-Powered Career Hub",
+    description: "Build your dream career with AI. Generate portfolios, optimize resumes, find jobs, and land interviews.",
+  },
 };
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Spotify-inspired font stack - DM Sans is very close to Circular
+const dmSans = DM_Sans({
+  variable: "--font-dm-sans",
   display: "swap",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+});
+
+// Fallback font
+const inter = Inter({
+  variable: "--font-inter",
+  display: "swap",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
 });
 
 export default function RootLayout({
@@ -26,15 +52,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.className} antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-        </ThemeProvider>
+      <body className={`${dmSans.className} ${inter.variable} antialiased`}>
+        <ConvexClientProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+            <Toaster />
+          </ThemeProvider>
+        </ConvexClientProvider>
       </body>
     </html>
   );

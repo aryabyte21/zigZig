@@ -2,6 +2,8 @@ import { updateSession } from "@/lib/supabase/middleware";
 import { type NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
+  // Add debug logging to see what paths are being processed
+  console.log("Middleware called for:", request.nextUrl.pathname);
   return await updateSession(request);
 }
 
