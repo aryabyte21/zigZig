@@ -90,15 +90,15 @@ If you wish to just develop locally and not deploy to Vercel, [follow the steps 
   GROQ_API_KEY=your_groq_api_key
   GEMINI_API_KEY=your_google_gemini_api_key
   FAL_KEY=your_fal_ai_api_key
-  EXA_API_KEY=your_exa_ai_api_key
+  EXA_API_KEY=your_exa_ai_api_key_from_https://exa.ai
   ```
 
   **Where to get API keys:**
   - **Supabase**: [Create a project](https://database.new) and get keys from [API settings](https://supabase.com/dashboard/project/_?showConnect=true)
-  - **Groq**: [Get API key](https://console.groq.com/keys) (Free tier available)
+  - **Groq**: [Get API key](https://console.groq.com/keys) (Free tier available)  
   - **Google Gemini**: [Get API key](https://aistudio.google.com/app/apikey) (Free tier available)
+  - **Exa AI**: [Get API key](https://exa.ai/) (Required for intelligent job recommendations - Free tier available)
   - **Fal.AI**: [Get API key](https://fal.ai/dashboard) (Free credits included)
-  - **Exa.ai**: [Get API key](https://dashboard.exa.ai/) (Free tier available)
 
 5. You can now run the Next.js local development server:
 

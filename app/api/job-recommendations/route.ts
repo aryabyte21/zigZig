@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 import { searchJobOpportunities, JobSearchFilters } from "@/lib/ai/exa";
+import { PortfolioParser } from "@/lib/portfolio-parser";
 
 export async function GET(request: NextRequest) {
   try {
@@ -76,8 +77,64 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Use enhanced Exa.ai search for recommendations
-    const jobs = await searchJobOpportunities(filters, { profile, portfolio });
+    // Parse portfolio with enhanced context for better job matching
+    let parsedPortfolio = null;
+    if (portfolio) {
+      try {
+        parsedPortfolio = PortfolioParser.parsePortfolio(portfolio);
+        console.log('Enhanced portfolio parsing for job recommendations:', {
+          skills: parsedPortfolio.skills.all.slice(0, 10),
+          experienceLevel: parsedPortfolio.experience.level,
+          preferredRoles: parsedPortfolio.preferences.preferredRoles,
+          location: parsedPortfolio.location
+        });
+      } catch (error) {
+        console.error('Portfolio parsing error:', error);
+      }
+    }
+
+    // Choose between advanced and standard search based on query parameter
+    const useAdvanced = request.nextUrl.searchParams.get('advanced') === 'true';
+    
+    let jobs;
+    if (useAdvanced && parsedPortfolio) {
+      // Use advanced multi-strategy search
+      const { advancedJobSearch } = await import("@/lib/ai/advanced-exa-job-search");
+      const advancedResults = await advancedJobSearch(filters, parsedPortfolio, {
+        searchStrategies: ['neural', 'hybrid'],
+        includeFreshJobs: true,
+        includeRemoteJobs: true,
+        targetSpecificBoards: true,
+        extractFullContent: true,
+        enableLLMContext: false, // Keep false for compatibility
+        maxResultsPerStrategy: 15,
+      });
+      
+      // Convert advanced results to standard format
+      jobs = advancedResults.map(result => ({
+        id: result.id,
+        title: result.title,
+        url: result.url,
+        company: result.extractedJobData.company,
+        location: result.extractedJobData.location,
+        description: result.text?.substring(0, 500) + (result.text && result.text.length > 500 ? '...' : '') || 'No description available',
+        publishedDate: result.publishedDate,
+        score: result.relevanceScore,
+        relevanceScore: result.relevanceScore,
+        salaryRange: result.extractedJobData.salary,
+        jobType: result.extractedJobData.jobType,
+        experienceLevel: result.extractedJobData.experienceLevel,
+        skills: result.extractedJobData.skills,
+        benefits: result.extractedJobData.benefits,
+        companySize: result.extractedJobData.companySize,
+        applicationDeadline: result.extractedJobData.applicationDeadline,
+        remote: result.extractedJobData.remote,
+        hybrid: result.extractedJobData.hybrid,
+      }));
+    } else {
+      // Use standard search for backward compatibility
+      jobs = await searchJobOpportunities(filters, { profile, portfolio, parsedPortfolio });
+    }
 
     // Filter and rank recommendations
     const recommendations = jobs

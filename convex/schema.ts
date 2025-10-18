@@ -42,32 +42,23 @@ export default defineSchema({
     category: v.string(), // AI-categorized: "hiring", "networking", "collaboration", "spam"
     priority: v.number(), // 1-5, AI-determined
     encryptionKey: v.optional(v.string()),
+    magicToken: v.optional(v.string()), // Unique token for magic link access (optional for backward compatibility)
   }).index("by_portfolio_user", ["portfolioUserId", "lastMessageAt"])
     .index("by_visitor", ["visitorId"])
-    .index("by_category", ["portfolioUserId", "category"]),
+    .index("by_category", ["portfolioUserId", "category"])
+    .index("by_magic_token", ["magicToken"]),
 
   messages: defineTable({
     conversationId: v.id("conversations"),
     senderId: v.string(),
     senderName: v.string(),
-    content: v.string(), // encrypted
-    messageType: v.union(v.literal("text"), v.literal("voice"), v.literal("ai_reply")),
-    voiceMessageUrl: v.optional(v.string()),
-    transcription: v.optional(v.string()),
+    content: v.string(), // enriched with context
+    messageType: v.union(v.literal("text"), v.literal("ai_reply")),
     sentiment: v.optional(v.string()), // AI-analyzed: "positive", "neutral", "negative"
     aiGenerated: v.boolean(),
     readAt: v.optional(v.number()),
-    metadata: v.optional(v.any()),
+    metadata: v.optional(v.any()), // company, intent, etc.
   }).index("by_conversation", ["conversationId"]),
-
-  voice_messages: defineTable({
-    messageId: v.id("messages"),
-    audioUrl: v.string(),
-    duration: v.number(),
-    transcription: v.string(),
-    language: v.string(),
-    generatedByAI: v.boolean(),
-  }).index("by_message", ["messageId"]),
 
   job_referrals: defineTable({
     fromUserId: v.string(),
@@ -89,6 +80,28 @@ export default defineSchema({
     conversionRate: v.number(), // visitors who got hired/connected
     aiReplyRate: v.number(),
   }).index("by_user_period", ["userId", "period"]),
+
+  contact_intelligence: defineTable({
+    conversationId: v.id("conversations"),
+    visitorEmail: v.string(),
+    company: v.optional(v.string()),
+    jobTitle: v.optional(v.string()),
+    linkedinUrl: v.optional(v.string()),
+    companyInfo: v.optional(v.any()), // AI-enriched company data
+    mutualConnections: v.optional(v.array(v.string())),
+    intent: v.string(), // hiring, collaboration, networking, other
+    urgency: v.optional(v.string()), // high, medium, low
+    estimatedValue: v.optional(v.number()), // AI-estimated opportunity value
+    followUpSuggestions: v.optional(v.array(v.string())),
+  }).index("by_conversation", ["conversationId"])
+    .index("by_email", ["visitorEmail"]),
+
+  // Real-time presence tracking
+  presence: defineTable({
+    userId: v.string(),
+    status: v.union(v.literal("online"), v.literal("away")),
+    lastSeen: v.number(),
+  }).index("by_user", ["userId"]),
 });
 
 

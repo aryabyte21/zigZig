@@ -1,67 +1,53 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useMemo, useRef, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
+import { DebugConversation } from "@/components/debug-conversation";
 import { 
   Search, 
-  Filter, 
   Archive, 
   Trash2, 
-  Star, 
   MessageSquare, 
-  Clock,
-  TrendingUp,
   Bot,
-  CheckCircle,
   AlertTriangle,
-  Users,
   Briefcase,
   Network,
-  Handshake
+  Handshake,
+  MoreHorizontal,
+  Clock,
+  Mail,
+  Zap,
+  CheckCheck
 } from "lucide-react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { toast } from "sonner";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
+import { InboxReplyInput } from "@/components/inbox-reply-input";
 
 interface InboxDashboardProps {
   userId: string;
 }
 
-interface Conversation {
-  _id: Id<"conversations">;
-  _creationTime: number;
-  portfolioUserId: string;
-  visitorId?: string;
-  visitorEmail?: string;
-  visitorName: string;
-  lastMessageAt: number;
-  status: "active" | "archived" | "spam";
-  unreadCount: number;
-  category: string;
-  priority: number;
-}
-
 export function InboxDashboard({ userId }: InboxDashboardProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedConversation, setSelectedConversation] = useState<Id<"conversations"> | null>(null);
 
   // Convex queries
   const conversations = useQuery(api.messaging.getConversations, { 
     portfolioUserId: userId,
-    limit: 100 
-  });
-
-  const analytics = useQuery(api.messaging.getConversationAnalytics, { 
-    userId,
-    period: "weekly" 
+    limit: 50 
   });
 
   const messages = useQuery(
@@ -73,53 +59,32 @@ export function InboxDashboard({ userId }: InboxDashboardProps) {
   const archiveConversationMutation = useMutation(api.messaging.archiveConversation);
   const markAsReadMutation = useMutation(api.messaging.markAsRead);
 
-  // Filter and search conversations
+  // Filter conversations
   const filteredConversations = useMemo(() => {
     if (!conversations) return [];
 
-    let filtered = conversations.filter((conv: Conversation) => {
-      // Search filter
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        return (
-          conv.visitorName.toLowerCase().includes(query) ||
-          conv.visitorEmail?.toLowerCase().includes(query) ||
-          conv.category.toLowerCase().includes(query)
-        );
-      }
-      return true;
-    });
-
-    // Category filter
-    if (selectedCategory !== "all") {
-      filtered = filtered.filter((conv: Conversation) => conv.category === selectedCategory);
+    let filtered = conversations;
+    
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = conversations.filter((conv: any) => 
+        conv.visitorName.toLowerCase().includes(query) ||
+        conv.visitorEmail?.toLowerCase().includes(query)
+      );
     }
 
-    // Sort by priority and last message time
-    return filtered.sort((a: Conversation, b: Conversation) => {
-      if (a.priority !== b.priority) {
-        return b.priority - a.priority; // Higher priority first
-      }
-      return b.lastMessageAt - a.lastMessageAt; // More recent first
+    // Sort by unread first, then by last message time
+    return filtered.sort((a: any, b: any) => {
+      if (a.unreadCount > 0 && b.unreadCount === 0) return -1;
+      if (b.unreadCount > 0 && a.unreadCount === 0) return 1;
+      return b.lastMessageAt - a.lastMessageAt;
     });
-  }, [conversations, searchQuery, selectedCategory]);
-
-  // Get category counts
-  const categoryCounts = useMemo(() => {
-    if (!conversations) return {};
-    
-    const counts: Record<string, number> = {};
-    conversations.forEach((conv: Conversation) => {
-      counts[conv.category] = (counts[conv.category] || 0) + 1;
-    });
-    return counts;
-  }, [conversations]);
+  }, [conversations, searchQuery]);
 
   // Handle conversation selection
   const handleSelectConversation = async (conversationId: Id<"conversations">) => {
     setSelectedConversation(conversationId);
     
-    // Mark as read
     try {
       await markAsReadMutation({ conversationId, userId });
     } catch (error) {
@@ -127,253 +92,343 @@ export function InboxDashboard({ userId }: InboxDashboardProps) {
     }
   };
 
-  // Handle archive conversation
-  const handleArchiveConversation = async (conversationId: Id<"conversations">, action: "archive" | "spam" | "delete") => {
+  // Auto-scroll to bottom when messages change
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages?.messages]);
+
+  // Handle archive
+  const handleArchive = async (conversationId: Id<"conversations">, action: "archive" | "spam") => {
     try {
       await archiveConversationMutation({ conversationId, userId, action });
-      toast.success(`Conversation ${action}d successfully`);
+      toast.success(`Conversation ${action === "archive" ? "archived" : "marked as spam"}`);
       
-      // Clear selection if archived conversation was selected
       if (selectedConversation === conversationId) {
         setSelectedConversation(null);
       }
     } catch (error) {
-      console.error(`Failed to ${action} conversation:`, error);
       toast.error(`Failed to ${action} conversation`);
     }
   };
 
-  // Get category icon and color
-  const getCategoryDisplay = (category: string) => {
+  // Get category icon
+  const getCategoryIcon = (category: string) => {
     switch (category) {
-      case "hiring":
-        return { icon: Briefcase, color: "text-green-600 bg-green-100 dark:bg-green-900/20" };
-      case "networking":
-        return { icon: Network, color: "text-blue-600 bg-blue-100 dark:bg-blue-900/20" };
-      case "collaboration":
-        return { icon: Handshake, color: "text-purple-600 bg-purple-100 dark:bg-purple-900/20" };
-      case "spam":
-        return { icon: AlertTriangle, color: "text-red-600 bg-red-100 dark:bg-red-900/20" };
-      default:
-        return { icon: MessageSquare, color: "text-gray-600 bg-gray-100 dark:bg-gray-900/20" };
+      case "hiring": return Briefcase;
+      case "networking": return Network;
+      case "collaboration": return Handshake;
+      default: return MessageSquare;
     }
   };
 
-  // Get priority color
-  const getPriorityColor = (priority: number) => {
-    if (priority >= 5) return "border-l-red-500";
-    if (priority >= 4) return "border-l-orange-500";
-    if (priority >= 3) return "border-l-yellow-500";
-    return "border-l-gray-300";
+  // Format time
+  const formatTime = (timestamp: number) => {
+    const now = Date.now();
+    const diff = now - timestamp;
+    const hours = diff / (1000 * 60 * 60);
+    
+    if (hours < 1) return "now";
+    if (hours < 24) return `${Math.floor(hours)}h`;
+    if (hours < 168) return `${Math.floor(hours / 24)}d`;
+    return new Date(timestamp).toLocaleDateString();
   };
 
+  const selectedConv = conversations?.find(c => c._id === selectedConversation);
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[800px]">
-      {/* Conversations List */}
-      <div className="lg:col-span-1 space-y-4">
-        {/* Search and Filters */}
-        <div className="space-y-3">
+    <div className="flex h-full bg-background">
+      {/* Conversations Sidebar */}
+      <div className="w-80 border-r border-border flex flex-col flex-shrink-0">
+        {/* Search */}
+        <div className="p-4 border-b border-border">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search conversations..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 border-0 bg-muted/50"
             />
           </div>
-
-          {/* Category Tabs */}
-          <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="all" className="text-xs">
-                All ({conversations?.length || 0})
-              </TabsTrigger>
-              <TabsTrigger value="hiring" className="text-xs">
-                Jobs ({categoryCounts.hiring || 0})
-              </TabsTrigger>
-              <TabsTrigger value="networking" className="text-xs">
-                Network ({categoryCounts.networking || 0})
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
         </div>
 
         {/* Conversations List */}
-        <ScrollArea className="h-[600px]">
-          <div className="space-y-2">
-            {filteredConversations.map((conversation: Conversation) => {
-              const categoryDisplay = getCategoryDisplay(conversation.category);
-              const CategoryIcon = categoryDisplay.icon;
-              
-              return (
-                <Card
-                  key={conversation._id}
-                  className={`cursor-pointer transition-all hover:shadow-md border-l-4 ${getPriorityColor(conversation.priority)} ${
-                    selectedConversation === conversation._id ? "ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-950/20" : ""
-                  }`}
-                  onClick={() => handleSelectConversation(conversation._id)}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start space-x-3 flex-1">
-                        <Avatar className="h-10 w-10">
-                          <AvatarFallback className={categoryDisplay.color}>
-                            <CategoryIcon className="h-5 w-5" />
-                          </AvatarFallback>
-                        </Avatar>
-                        
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <h4 className="font-semibold text-sm truncate">
-                              {conversation.visitorName}
-                            </h4>
-                            {conversation.unreadCount > 0 && (
-                              <Badge variant="default" className="ml-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
-                                {conversation.unreadCount}
-                              </Badge>
-                            )}
-                          </div>
-                          
-                          <p className="text-xs text-muted-foreground truncate">
-                            {conversation.visitorEmail}
-                          </p>
-                          
-                          <div className="flex items-center justify-between mt-2">
-                            <Badge variant="outline" className="text-xs capitalize">
-                              {conversation.category}
-                            </Badge>
-                            
-                            <span className="text-xs text-muted-foreground">
-                              {new Date(conversation.lastMessageAt).toLocaleDateString()}
-                            </span>
-                          </div>
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-2">
+            {!conversations ? (
+              // Loading skeleton
+              Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-3 p-3 rounded-lg">
+                  <Skeleton className="h-10 w-10 rounded-full" />
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-3 w-12" />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="h-3 w-3 rounded" />
+                      <Skeleton className="h-3 w-20" />
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : filteredConversations?.length > 0 ? (
+              filteredConversations.map((conversation: any) => {
+                const CategoryIcon = getCategoryIcon(conversation.category);
+                const isSelected = selectedConversation === conversation._id;
+                
+                return (
+                  <div
+                    key={conversation._id}
+                    onClick={() => handleSelectConversation(conversation._id)}
+                    className={`
+                      flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all duration-200
+                      ${isSelected 
+                        ? "bg-primary/10 border-l-4 border-primary shadow-sm" 
+                        : "hover:bg-muted/50 border-l-4 border-transparent"
+                      }
+                    `}
+                  >
+                    <Avatar className="h-10 w-10 flex-shrink-0">
+                      <AvatarFallback className={isSelected ? "bg-primary/20 text-primary" : ""}>
+                        {conversation.visitorName.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <h4 className={`font-medium text-sm truncate ${isSelected ? "text-primary" : ""}`}>
+                          {conversation.visitorName}
+                        </h4>
+                        <div className="flex items-center gap-1">
+                          {conversation.unreadCount > 0 && (
+                            <div className="bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
+                              {conversation.unreadCount}
+                            </div>
+                          )}
+                          <span className="text-xs text-muted-foreground">
+                            {formatTime(conversation.lastMessageAt)}
+                          </span>
                         </div>
                       </div>
+                      
+                      <div className="flex items-center gap-2 mt-1">
+                        <CategoryIcon className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground capitalize">
+                          {conversation.category}
+                        </span>
+                        {conversation.priority >= 4 && (
+                          <Badge variant="secondary" className="h-4 text-xs px-1">
+                            <Zap className="h-2 w-2 mr-1" />
+                            High
+                          </Badge>
+                        )}
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
+                  </div>
+                );
+              })
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <Mail className="h-8 w-8 mx-auto mb-2" />
+                <p className="text-sm font-medium">No conversations found</p>
+                <p className="text-xs mt-1">
+                  {searchQuery ? "Try adjusting your search" : "Conversations will appear here"}
+                </p>
+              </div>
+            )}
           </div>
-        </ScrollArea>
+        </div>
       </div>
 
       {/* Message View */}
-      <div className="lg:col-span-2">
-        {selectedConversation ? (
-          <Card className="h-full">
-            <CardHeader className="border-b">
-              <div className="flex items-center justify-between">
+      <div className="flex-1 flex flex-col">
+        {selectedConv ? (
+          <>
+            {/* Header */}
+            <div className="p-6 border-b border-border bg-gradient-to-r from-background to-muted/20 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Avatar className="h-12 w-12">
+                  <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+                    {selectedConv.visitorName.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
                 <div>
-                  <CardTitle className="text-lg">
-                    {filteredConversations.find(c => c._id === selectedConversation)?.visitorName}
-                  </CardTitle>
-                  <CardDescription>
-                    {filteredConversations.find(c => c._id === selectedConversation)?.visitorEmail}
-                  </CardDescription>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleArchiveConversation(selectedConversation, "archive")}
-                  >
-                    <Archive className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleArchiveConversation(selectedConversation, "spam")}
-                  >
-                    <AlertTriangle className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleArchiveConversation(selectedConversation, "delete")}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <h2 className="text-lg font-semibold">{selectedConv.visitorName}</h2>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <span>{selectedConv.visitorEmail}</span>
+                    {selectedConv.unreadCount > 0 && (
+                      <Badge variant="secondary" className="h-5 text-xs">
+                        {selectedConv.unreadCount} new
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               </div>
-            </CardHeader>
-            
-            <CardContent className="p-0 h-[calc(100%-120px)]">
-              <ScrollArea className="h-full p-4">
-                <div className="space-y-4">
-                  {messages?.messages?.map((message: any) => (
-                    <div
-                      key={message._id}
-                      className={`flex items-start space-x-3 ${
-                        message.senderId === userId ? "flex-row-reverse space-x-reverse" : ""
-                      }`}
-                    >
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback className={
-                          message.aiGenerated 
-                            ? "bg-gradient-to-r from-green-400 to-blue-500 text-white" 
-                            : message.senderId === userId
-                            ? "bg-blue-500 text-white"
-                            : "bg-gray-200"
-                        }>
-                          {message.aiGenerated ? (
-                            <Bot className="h-4 w-4" />
-                          ) : (
-                            message.senderName.charAt(0).toUpperCase()
-                          )}
-                        </AvatarFallback>
-                      </Avatar>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => handleArchive(selectedConv._id, "archive")}>
+                    <Archive className="h-4 w-4 mr-2" />
+                    Archive
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleArchive(selectedConv._id, "spam")}>
+                    <AlertTriangle className="h-4 w-4 mr-2" />
+                    Mark as Spam
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
 
-                      <div className={`max-w-[70%] ${
-                        message.senderId === userId ? "text-right" : ""
-                      }`}>
-                        <div className={`rounded-lg px-4 py-2 ${
-                          message.senderId === userId
-                            ? "bg-blue-500 text-white"
-                            : message.aiGenerated
-                            ? "bg-green-100 dark:bg-green-900/20 border border-green-200 dark:border-green-800"
-                            : "bg-gray-100 dark:bg-gray-800"
-                        }`}>
-                          <p className="text-sm">{message.content}</p>
-                        </div>
-                        
-                        <div className="flex items-center space-x-2 mt-1">
-                          <span className="text-xs text-muted-foreground">
-                            {new Date(message._creationTime).toLocaleTimeString()}
-                          </span>
-                          
-                          {message.sentiment && (
-                            <Badge variant="outline" className="text-xs">
-                              {message.sentiment}
-                            </Badge>
-                          )}
-                          
-                          {message.aiGenerated && (
-                            <Badge variant="secondary" className="text-xs">
-                              <Bot className="h-3 w-3 mr-1" />
-                              AI
-                            </Badge>
-                          )}
-                        </div>
+            {/* Debug Component - Remove in production */}
+            {/* <div className="p-4 border-b bg-muted/10">
+              <DebugConversation 
+                conversationId={selectedConv._id}
+                currentUserId={userId}
+              />
+            </div> */}
+
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-b from-muted/5 to-background min-h-0">
+              <div className="space-y-4 max-w-4xl mx-auto" style={{ minHeight: 'calc(100vh - 300px)' }}>
+                {!messages ? (
+                  // Loading skeleton for messages
+                  Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className={`flex gap-3 ${i % 2 === 0 ? "flex-row-reverse" : ""}`}>
+                      <Skeleton className="h-8 w-8 rounded-full flex-shrink-0" />
+                      <div className={`max-w-[70%] ${i % 2 === 0 ? "text-right" : ""}`}>
+                        <Skeleton className={`h-12 rounded-2xl ${i % 2 === 0 ? "w-48" : "w-36"}`} />
+                        <Skeleton className="h-3 w-16 mt-2" />
                       </div>
                     </div>
-                  ))}
-                </div>
-              </ScrollArea>
-            </CardContent>
-          </Card>
+                  ))
+                ) : messages.messages?.length > 0 ? (
+                  messages.messages.map((message: any) => {
+                    const isOwner = message.senderId === userId;
+                    
+                    return (
+                      <div
+                        key={message._id}
+                        className={`flex gap-3 ${isOwner ? "flex-row-reverse" : ""}`}
+                      >
+                        <Avatar className="h-8 w-8 flex-shrink-0">
+                          <AvatarFallback className={
+                            message.aiGenerated 
+                              ? "bg-primary text-primary-foreground" 
+                              : isOwner
+                              ? "bg-primary/10 text-primary"
+                              : "bg-muted"
+                          }>
+                            {message.aiGenerated ? (
+                              <Bot className="h-4 w-4" />
+                            ) : (
+                              message.senderName.charAt(0).toUpperCase()
+                            )}
+                          </AvatarFallback>
+                        </Avatar>
+
+                        <div className={`max-w-[70%] ${isOwner ? "text-right" : ""}`}>
+                          {/* Sender name for consecutive messages */}
+                          {!isOwner && (
+                            <p className="text-xs font-medium text-muted-foreground mb-1 px-1">
+                              {message.senderName}
+                            </p>
+                          )}
+                          
+                          <div className={`
+                            rounded-2xl px-4 py-3 text-sm shadow-sm border-0 transition-all duration-200
+                            ${isOwner 
+                              ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-blue-500/25" 
+                              : "bg-white border border-gray-200 text-gray-900 shadow-gray-200/50"
+                            }
+                          `}>
+                            <p className="whitespace-pre-wrap leading-relaxed">
+                              {message.content}
+                            </p>
+                          </div>
+                          
+                          <div className={`flex items-center gap-2 mt-2 px-1 ${isOwner ? "justify-end" : ""}`}>
+                            <span className="text-xs text-muted-foreground">
+                              {new Date(message._creationTime).toLocaleTimeString([], { 
+                                hour: '2-digit', 
+                                minute: '2-digit' 
+                              })}
+                            </span>
+                            
+                            {message.aiGenerated && (
+                              <Badge variant="secondary" className="text-xs bg-purple-100 text-purple-700 border-purple-200">
+                                <Bot className="h-3 w-3 mr-1" />
+                                AI
+                              </Badge>
+                            )}
+                            
+                            {isOwner && message.readAt && (
+                              <div className="text-xs text-blue-600 flex items-center gap-0.5">
+                                <CheckCheck className="h-3 w-3" />
+                                Read
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="flex-1 flex items-center justify-center py-8">
+                    <div className="text-center">
+                      <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold mb-2">Start the conversation</h3>
+                      <p className="text-muted-foreground">
+                        Send a message to begin your professional dialogue
+                      </p>
+                    </div>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+            </div>
+
+            {/* Reply Input */}
+            <div className="border-t p-6 bg-gradient-to-t from-muted/5 to-background flex-shrink-0">
+              <div className="max-w-4xl mx-auto">
+                <InboxReplyInput 
+                  conversationId={selectedConv._id}
+                  userId={userId}
+                  onMessageSent={() => {
+                    // Refresh messages
+                  }}
+                />
+              </div>
+            </div>
+          </>
         ) : (
-          <Card className="h-full flex items-center justify-center">
-            <CardContent className="text-center">
-              <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Select a Conversation</h3>
-              <p className="text-muted-foreground">
-                Choose a conversation from the list to view messages and manage responses.
+          <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-muted/20 to-background">
+            <div className="text-center max-w-md mx-auto p-8">
+              <div className="relative mb-6">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full blur-2xl opacity-20"></div>
+                <MessageSquare className="relative h-16 w-16 text-blue-500 mx-auto" />
+              </div>
+              <h3 className="text-xl font-semibold mb-3 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+                Select a conversation
+              </h3>
+              <p className="text-muted-foreground mb-4 leading-relaxed">
+                Choose a conversation from the sidebar to view messages and reply with AI-powered suggestions
               </p>
-            </CardContent>
-          </Card>
+              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                <Zap className="h-4 w-4 text-blue-500" />
+                <span>AI-enhanced messaging • Context-aware replies</span>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>

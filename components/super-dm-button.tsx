@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { MessageSquare, X } from "lucide-react";
-// import { SuperDMChat } from "./super-dm-chat";
+import { SuperDMChat } from "./super-dm-chat";
 
 interface SuperDMButtonProps {
   portfolioUserId: string;
@@ -49,9 +49,9 @@ export function SuperDMButton({ portfolioUserId, portfolioOwnerName }: SuperDMBu
       {/* Chat Modal - Using shadcn styling */}
       {isOpen && (
         <div className="fixed inset-0 z-[9998] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="relative w-full max-w-md h-[600px] bg-background border rounded-lg shadow-2xl overflow-hidden">
+          <div className="relative w-full max-w-md max-h-[90vh] h-[700px] bg-background border rounded-lg shadow-2xl overflow-hidden flex flex-col">
             {/* Header - Using shadcn colors */}
-            <div className="flex items-center justify-between p-4 border-b bg-muted/50">
+            <div className="flex items-center justify-between p-4 border-b bg-muted/50 flex-shrink-0">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                   <MessageSquare className="h-5 w-5 text-primary" />
@@ -72,23 +72,12 @@ export function SuperDMButton({ portfolioUserId, portfolioOwnerName }: SuperDMBu
             </div>
 
             {/* Chat Component */}
-            <div className="h-[calc(600px-80px)] p-4">
-              <div className="text-center space-y-4">
-                <h3 className="text-lg font-semibold">SuperDM Chat</h3>
-                <p className="text-muted-foreground">Chat functionality is being set up...</p>
-                <div className="space-y-2">
-                  <p className="text-sm">Portfolio User: {portfolioUserId}</p>
-                  <p className="text-sm">Owner Name: {portfolioOwnerName}</p>
-                </div>
-                <Button onClick={() => setIsOpen(false)} variant="outline">
-                  Close
-                </Button>
-              </div>
-              {/* <SuperDMChat
+            <div className="flex-1 overflow-hidden">
+              <SuperDMChat
                 portfolioUserId={portfolioUserId}
                 portfolioOwnerName={portfolioOwnerName}
                 onClose={() => setIsOpen(false)}
-              /> */}
+              />
             </div>
           </div>
         </div>

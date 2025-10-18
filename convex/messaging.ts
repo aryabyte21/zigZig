@@ -1,6 +1,5 @@
 import { query, mutation, internalAction, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
-import { Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
 
 // Public Queries
@@ -108,6 +107,40 @@ export const getConversationAnalytics = query({
 });
 
 /**
+ * Get conversation by magic token (for visitors to access their conversations)
+ */
+export const getConversationByToken = query({
+  args: { token: v.string() },
+  returns: v.union(
+    v.object({
+      conversation: v.any(),
+      messages: v.array(v.any()),
+    }),
+    v.null()
+  ),
+  handler: async (ctx, args) => {
+    const conversation = await ctx.db
+      .query("conversations")
+      .withIndex("by_magic_token", (q) => q.eq("magicToken", args.token))
+      .first();
+
+    if (!conversation) return null;
+
+    // Get all messages for this conversation
+    const messages = await ctx.db
+      .query("messages")
+      .withIndex("by_conversation", (q) => q.eq("conversationId", conversation._id))
+      .order("asc")
+      .collect();
+
+    return {
+      conversation,
+      messages,
+    };
+  },
+});
+
+/**
  * Get job referrals for a user
  */
 export const getJobReferrals = query({
@@ -138,6 +171,11 @@ export const getJobReferrals = query({
 /**
  * Send a new message with AI classification
  */
+// Helper function to generate unique magic token
+function generateMagicToken(): string {
+  return `conv_${Date.now()}_${Math.random().toString(36).substr(2, 16)}`;
+}
+
 export const sendMessage = mutation({
   args: {
     portfolioUserId: v.string(),
@@ -147,14 +185,17 @@ export const sendMessage = mutation({
     messageType: v.optional(v.string()),
     visitorEmail: v.optional(v.string()),
     conversationId: v.optional(v.id("conversations")),
+    metadata: v.optional(v.any()),
   },
   returns: v.object({
     messageId: v.id("messages"),
     conversationId: v.id("conversations"),
+    magicLink: v.optional(v.string()),
   }),
   handler: async (ctx, args) => {
     const messageType = args.messageType ?? "text";
     const now = Date.now();
+    let magicLink: string | undefined;
 
     let conversationId = args.conversationId;
 
@@ -171,8 +212,17 @@ export const sendMessage = mutation({
 
       if (existingConversation) {
         conversationId = existingConversation._id;
+        // Generate magic token for existing conversation if it doesn't have one
+        if (!existingConversation.magicToken) {
+          const token = generateMagicToken();
+          await ctx.db.patch(existingConversation._id, { magicToken: token });
+          magicLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/chat/${token}`;
+        } else {
+          magicLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/chat/${existingConversation.magicToken}`;
+        }
       } else {
-        // Create new conversation
+        // Create new conversation with magic token
+        const token = generateMagicToken();
         conversationId = await ctx.db.insert("conversations", {
           portfolioUserId: args.portfolioUserId,
           visitorId: args.senderId !== args.portfolioUserId ? args.senderId : undefined,
@@ -183,7 +233,9 @@ export const sendMessage = mutation({
           unreadCount: args.senderId !== args.portfolioUserId ? 1 : 0,
           category: "uncategorized", // Will be updated by AI
           priority: 3, // Default priority, will be updated by AI
+          magicToken: token,
         });
+        magicLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/chat/${token}`;
       }
     }
 
@@ -196,7 +248,7 @@ export const sendMessage = mutation({
       messageType: messageType as any,
       aiGenerated: false,
       sentiment: undefined, // Will be analyzed by AI
-      metadata: {},
+      metadata: args.metadata || {},
     });
 
     // Update conversation
@@ -208,6 +260,45 @@ export const sendMessage = mutation({
           ? conversation.unreadCount + 1 
           : conversation.unreadCount,
       });
+
+      // Send email notification if portfolio owner is replying to visitor
+      const isOwnerReply = args.senderId === conversation.portfolioUserId;
+      
+      // 🔍 LOG: Email notification decision
+      console.log("📧 EMAIL NOTIFICATION CHECK:", {
+        isOwnerReply,
+        senderId: args.senderId,
+        portfolioUserId: conversation.portfolioUserId,
+        visitorEmail: conversation.visitorEmail,
+        hasMagicToken: !!conversation.magicToken,
+        conversationId: conversation._id
+      });
+      
+      if (isOwnerReply && conversation.visitorEmail && conversation.magicToken) {
+        console.log("✅ SCHEDULING EMAIL NOTIFICATION:", {
+          to: conversation.visitorEmail,
+          from: args.senderName,
+          messagePreview: args.content.substring(0, 50) + "...",
+          magicToken: conversation.magicToken
+        });
+        
+        await ctx.scheduler.runAfter(0, internal.email.sendEmailNotification, {
+          conversationId,
+          visitorEmail: conversation.visitorEmail,
+          visitorName: conversation.visitorName,
+          portfolioOwnerName: args.senderName,
+          message: args.content,
+          magicToken: conversation.magicToken,
+        });
+        
+        console.log("📬 EMAIL NOTIFICATION SCHEDULED SUCCESSFULLY");
+      } else {
+        console.log("❌ EMAIL NOT SENT - Conditions not met:", {
+          isOwnerReply,
+          hasVisitorEmail: !!conversation.visitorEmail,
+          hasMagicToken: !!conversation.magicToken
+        });
+      }
     }
 
     // Schedule AI processing
@@ -216,7 +307,7 @@ export const sendMessage = mutation({
       conversationId,
     });
 
-    return { messageId, conversationId };
+    return { messageId, conversationId, magicLink };
   },
 });
 
@@ -288,9 +379,15 @@ export const archiveConversation = mutation({
       // Delete conversation
       await ctx.db.delete(args.conversationId);
     } else {
+      // Map action to status value
+      const statusMap = {
+        "archive": "archived" as const,
+        "spam": "spam" as const,
+      };
+      
       // Update status
       await ctx.db.patch(args.conversationId, {
-        status: args.action as any,
+        status: statusMap[args.action],
       });
     }
 
@@ -549,5 +646,70 @@ export const updateAnalytics = internalMutation({
     }
 
     return null;
+  },
+});
+
+/**
+ * DEBUG HELPER: Update portfolioUserId for a conversation
+ * Use this if emails aren't working due to user ID mismatch
+ */
+export const updateConversationOwner = mutation({
+  args: {
+    conversationId: v.id("conversations"),
+    newPortfolioUserId: v.string(),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const conversation = await ctx.db.get(args.conversationId);
+    
+    if (!conversation) {
+      throw new Error("Conversation not found");
+    }
+
+    console.log("🔧 UPDATING CONVERSATION OWNER:", {
+      conversationId: args.conversationId,
+      oldPortfolioUserId: conversation.portfolioUserId,
+      newPortfolioUserId: args.newPortfolioUserId,
+    });
+
+    await ctx.db.patch(args.conversationId, {
+      portfolioUserId: args.newPortfolioUserId,
+    });
+
+    console.log("✅ CONVERSATION OWNER UPDATED");
+    return null;
+  },
+});
+
+/**
+ * DEBUG HELPER: Get conversation details for debugging
+ */
+export const debugConversation = query({
+  args: {
+    conversationId: v.id("conversations"),
+  },
+  returns: v.object({
+    conversationId: v.id("conversations"),
+    portfolioUserId: v.string(),
+    visitorEmail: v.optional(v.string()),
+    visitorName: v.string(),
+    hasMagicToken: v.boolean(),
+    magicToken: v.optional(v.string()),
+  }),
+  handler: async (ctx, args) => {
+    const conversation = await ctx.db.get(args.conversationId);
+    
+    if (!conversation) {
+      throw new Error("Conversation not found");
+    }
+
+    return {
+      conversationId: conversation._id,
+      portfolioUserId: conversation.portfolioUserId,
+      visitorEmail: conversation.visitorEmail,
+      visitorName: conversation.visitorName,
+      hasMagicToken: !!conversation.magicToken,
+      magicToken: conversation.magicToken,
+    };
   },
 });
