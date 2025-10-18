@@ -195,7 +195,16 @@ export function LinksStep({ onComplete, initialData }: LinksStepProps) {
         .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
       
       onComplete({ links: filteredLinks });
-      toast.success("Links saved successfully!");
+      // Don't show toast here - wizard handles step completion notifications
+    } else {
+      // Show specific error for LinkedIn if it's missing
+      if (validationErrors['linkedin']) {
+        toast.error("LinkedIn is required to continue", {
+          description: "Please add your LinkedIn profile URL to proceed with onboarding."
+        });
+      } else {
+        toast.error("Please fix the validation errors before continuing");
+      }
     }
   };
 

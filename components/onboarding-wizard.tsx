@@ -32,7 +32,7 @@ const steps = [
   {
     id: 1,
     title: "Upload Resume",
-    description: "Upload your PDF resume and let AI extract & enhance your information",
+    description: "Upload your PDF resume and let AI extract & enhance your information (Please wait it takes a while)",
     icon: FileText,
     component: EnhancedResumeUpload,
   },

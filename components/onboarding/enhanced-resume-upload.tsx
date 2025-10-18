@@ -165,7 +165,7 @@ export function EnhancedResumeUpload({ onComplete, initialData }: EnhancedResume
       setExtractedData(data);
       onComplete({ resume: data });
       
-      toast.success("Resume processed successfully with AI enhancements!");
+      // Don't show toast here - wizard handles step completion
       
     } catch (error: any) {
       console.error("Error processing resume:", error);
@@ -245,7 +245,7 @@ export function EnhancedResumeUpload({ onComplete, initialData }: EnhancedResume
       setExtractedData(data);
       onComplete({ resume: data });
       
-      toast.success("Resume processed successfully!");
+      // Don't show toast here - wizard handles step completion
     } catch (error: any) {
       console.error("Error processing resume:", error);
       toast.error(`Failed to process resume: ${error.message}`);
