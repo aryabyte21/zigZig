@@ -26,7 +26,7 @@ interface JobRecommendation {
   jobType: string;
   experienceLevel: string;
   skills: string[];
-  benefits: string[];
+  benefits?: string[];
   companySize?: string;
   companyCulture?: string;
   applicationDeadline?: string;
@@ -384,7 +384,7 @@ export function JobRecommendations() {
                     </div>
                   </div>
 
-                  {job.benefits.length > 0 && (
+                  {job.benefits && job.benefits.length > 0 && (
                     <div className="flex flex-wrap gap-1">
                       {job.benefits.slice(0, 4).map((benefit) => (
                         <Badge key={benefit} variant="secondary" className="text-xs">
