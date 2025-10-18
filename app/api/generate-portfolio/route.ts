@@ -14,26 +14,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { resumeData, links, photo, aiAvatar } = await request.json();
-    
-    // Extract resume file URL if available
+    const { resumeData, links, photo, aiAvatar, voiceId } = await request.json();
     const resumeFileUrl = resumeData?.resumeFileUrl || null;
-    
-    console.log('Portfolio generation request received:');
-    console.log('resumeData:', JSON.stringify(resumeData, null, 2));
-    console.log('links:', links);
-    console.log('photo:', photo);
-    console.log('aiAvatar:', aiAvatar);
 
     // Generate portfolio content using Gemini AI
     let enhancedContent = resumeData;
     
     if (resumeData) {
       try {
-        console.log('Enhancing portfolio content with Gemini...');
-        console.log('Input resumeData:', JSON.stringify(resumeData, null, 2));
-        
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
         
         const prompt = `
         You are a professional portfolio writer. Transform this resume data into compelling, engaging portfolio content. 
@@ -64,14 +53,9 @@ export async function POST(request: NextRequest) {
         }
         
         enhancedContent = JSON.parse(enhancedText);
-        console.log('Gemini enhancement successful!');
-        console.log('Enhanced content:', JSON.stringify(enhancedContent, null, 2));
-        
       } catch (aiError) {
-        console.error('Gemini enhancement error:', aiError);
         // Continue with original data if AI fails
         enhancedContent = resumeData;
-        console.log('Using original resume data due to AI error');
       }
     }
 
@@ -106,14 +90,8 @@ export async function POST(request: NextRequest) {
       originalPhoto: photo || '',
       resumeFileUrl: resumeFileUrl,
     };
-    
-    console.log('Final portfolio content:');
-    console.log('portfolioContent.avatar:', portfolioContent.avatar);
-    console.log('portfolioContent.originalPhoto:', portfolioContent.originalPhoto);
-    console.log('portfolioContent.resumeFileUrl:', portfolioContent.resumeFileUrl);
-    
 
-    // First, ensure the user profile exists (required for foreign key constraint)
+    // Ensure the user profile exists (required for foreign key constraint)
     const { error: profileError } = await supabase
       .from('profiles')
       .upsert({
@@ -136,10 +114,7 @@ export async function POST(request: NextRequest) {
       });
 
     if (profileError) {
-      console.error('Profile upsert error:', profileError);
-      return NextResponse.json({ 
-        error: "Failed to create user profile" 
-      }, { status: 500 });
+      return NextResponse.json({ error: "Failed to create user profile" }, { status: 500 });
     }
 
     // Generate unique slug with retry logic to handle race conditions
@@ -179,7 +154,6 @@ export async function POST(request: NextRequest) {
 
       // Check if we hit a duplicate slug error
       if (error && error.code === '23505' && error.message.includes('portfolios_slug_key')) {
-        console.log(`Slug '${slug}' already exists, trying with counter ${counter + 1}`);
         counter++;
         continue;
       }
@@ -190,18 +164,31 @@ export async function POST(request: NextRequest) {
       break;
     }
 
-    if (portfolioError) {
-      console.error('Portfolio creation error:', portfolioError);
+    if (portfolioError || !portfolio) {
       return NextResponse.json({ 
         error: "Failed to create portfolio" 
       }, { status: 500 });
     }
 
-    if (!portfolio) {
-      console.error('Portfolio creation failed: max retries reached');
-      return NextResponse.json({ 
-        error: "Failed to create portfolio with unique slug" 
-      }, { status: 500 });
+    // Create AI agent if voiceId is provided
+    if (voiceId) {
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+        
+        // Create agent asynchronously (don't block portfolio creation)
+        fetch(`${baseUrl}/api/create-agent`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Cookie": request.headers.get("cookie") || "",
+          },
+          body: JSON.stringify({ portfolioId: portfolio.id }),
+        }).catch(() => {
+          // Silent fail - agent creation is non-blocking
+        });
+      } catch {
+        // Agent creation failure shouldn't block portfolio creation
+      }
     }
 
     return NextResponse.json({ 
@@ -214,7 +201,6 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Portfolio generation error:', error);
     return NextResponse.json({ 
       error: "Failed to generate portfolio" 
     }, { status: 500 });

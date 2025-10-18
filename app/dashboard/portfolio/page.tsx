@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { PortfolioList } from "@/components/portfolio-list";
+import { PortfolioAgentStats } from "@/components/portfolio-agent-stats";
+import { PortfolioConversationInsights } from "@/components/portfolio-conversation-insights";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 
@@ -38,6 +40,12 @@ export default async function PortfolioPage() {
           </Link>
         </Button>
       </div>
+
+      {/* AI Agent Stats */}
+      <PortfolioAgentStats userId={user.id} />
+
+      {/* Conversation Insights - Wow Factor Feature */}
+      <PortfolioConversationInsights userId={user.id} />
 
       <PortfolioList portfolios={portfolios || []} />
     </div>

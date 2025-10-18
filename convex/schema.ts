@@ -139,6 +139,35 @@ export default defineSchema({
     candidateUserId: v.string(),
     timestamp: v.number(),
   }).index("by_user_and_job", ["userId", "jobId", "timestamp"]),
+
+  // AI Voice Portfolio Agents
+  portfolio_agents: defineTable({
+    userId: v.string(),
+    portfolioId: v.string(), // Supabase portfolio.id
+    agentId: v.string(), // ElevenLabs agent ID
+    voiceId: v.string(),
+    agentUrl: v.optional(v.string()), // ElevenLabs shareable URL
+    conversationCount: v.number(),
+    lastConversationAt: v.optional(v.number()),
+    isActive: v.boolean(),
+  }).index("by_portfolio", ["portfolioId"])
+    .index("by_user", ["userId"])
+    .index("by_agent", ["agentId"]),
+
+  agent_conversations: defineTable({
+    agentId: v.string(),
+    userId: v.string(),
+    conversationId: v.string(), // ElevenLabs conversation ID
+    duration: v.number(), // seconds
+    timestamp: v.number(),
+    summary: v.optional(v.string()),
+    visitorInfo: v.optional(v.object({
+      name: v.optional(v.string()),
+      email: v.optional(v.string()),
+    })),
+  }).index("by_agent", ["agentId", "timestamp"])
+    .index("by_user", ["userId", "timestamp"])
+    .index("by_conversation", ["conversationId"]),
 });
 
 

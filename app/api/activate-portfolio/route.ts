@@ -43,6 +43,32 @@ export async function POST(request: NextRequest) {
       }, { status: 500 });
     }
 
+    // Try to create AI agent if user has voice ID
+    try {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("ai_voice_id")
+        .eq("id", user.id)
+        .single();
+
+      if (profile?.ai_voice_id) {
+        // Create agent asynchronously (don't block activation)
+        fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/create-agent`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Cookie": request.headers.get("cookie") || "",
+          },
+          body: JSON.stringify({ portfolioId }),
+        }).catch(err => {
+          console.error("Error creating agent (non-blocking):", err);
+        });
+      }
+    } catch (agentError) {
+      // Agent creation failure shouldn't block portfolio activation
+      console.error("Error checking for voice ID:", agentError);
+    }
+
     return NextResponse.json({ 
       success: true,
       message: "Portfolio activated successfully",

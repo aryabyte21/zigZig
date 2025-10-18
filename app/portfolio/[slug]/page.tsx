@@ -9,6 +9,7 @@ import { PortfolioActions, PortfolioFooterAction } from "@/components/portfolio-
 import { GitHubContributions } from "@/components/github-contributions";
 import { LogoImage } from "@/components/logo-image";
 import { SuperDMButton } from "@/components/super-dm-button";
+import { AIVoiceWidget } from "@/components/ai-voice-widget";
 import { Phone, MapPin, Linkedin, Github, ExternalLink, Mail } from "lucide-react";
 
 interface PortfolioPageProps {
@@ -471,6 +472,9 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
         portfolioUserId={portfolio.user_id}
         portfolioOwnerName={content.name || "Portfolio Owner"}
       />
+
+      {/* AI Voice Assistant Widget - Positioned to the left of SuperDM */}
+      <AIVoiceWidget portfolioId={portfolio.id} />
     </div>
   );
 }

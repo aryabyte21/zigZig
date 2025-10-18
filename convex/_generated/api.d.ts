@@ -8,6 +8,8 @@
  * @module
  */
 
+import type * as agents from "../agents.js";
+import type * as crons from "../crons.js";
 import type * as email from "../email.js";
 import type * as jobs from "../jobs.js";
 import type * as messaging from "../messaging.js";
@@ -29,6 +31,8 @@ import type {
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  agents: typeof agents;
+  crons: typeof crons;
   email: typeof email;
   jobs: typeof jobs;
   messaging: typeof messaging;

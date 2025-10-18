@@ -31,8 +31,8 @@ export function SuperDMButton({ portfolioUserId, portfolioOwnerName }: SuperDMBu
 
   return (
     <>
-      {/* Floating Action Button - Fixed z-index and removed purple */}
-      <div className="fixed bottom-6 right-6 z-[9999]">
+      {/* Floating Action Button - Positioned above AI voice widget with padding */}
+      <div className="fixed bottom-36 right-8 z-[9999]">
         <Button
           onClick={handleClick}
           size="lg"

@@ -17,12 +17,14 @@ import {
   ArrowRight, 
   ArrowLeft,
   Upload,
-  Loader2
+  Loader2,
+  Mic
 } from "lucide-react";
 
 import { EnhancedResumeUpload } from "@/components/onboarding/enhanced-resume-upload";
 import { LinksStep } from "@/components/onboarding/links-step";
 import { PhotoStep } from "@/components/onboarding/photo-step";
+import { VoiceStep } from "@/components/onboarding/voice-step";
 
 interface OnboardingWizardProps {
   profile: any;
@@ -50,6 +52,13 @@ const steps = [
     icon: Camera,
     component: PhotoStep,
   },
+  {
+    id: 4,
+    title: "Record Voice",
+    description: "Record voice samples to create your AI assistant (optional)",
+    icon: Mic,
+    component: VoiceStep,
+  },
 ];
 
 export function OnboardingWizard({ profile }: OnboardingWizardProps) {
@@ -60,6 +69,7 @@ export function OnboardingWizard({ profile }: OnboardingWizardProps) {
     links: {},
     photo: null,
     aiAvatar: null,
+    voiceId: null,
   });
   const router = useRouter();
 
@@ -109,6 +119,7 @@ export function OnboardingWizard({ profile }: OnboardingWizardProps) {
           links: stepData.links,
           photo: stepData.photo,
           aiAvatar: stepData.aiAvatar,
+          voiceId: stepData.voiceId,
         }),
       });
 
@@ -191,6 +202,7 @@ export function OnboardingWizard({ profile }: OnboardingWizardProps) {
             <CurrentStepComponent
               onComplete={(data: any) => handleStepComplete(currentStep, data)}
               initialData={stepData}
+              onSkip={currentStep === 4 ? () => handleNext() : undefined}
             />
           )}
         </CardContent>

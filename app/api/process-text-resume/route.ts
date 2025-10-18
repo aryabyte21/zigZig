@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Use enhanced AI processing with integrated logo generation
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const prompt = `
     You are an expert resume parser with advanced text extraction capabilities. Extract ALL information from this resume text and return ONLY valid JSON with no additional text or markdown.
