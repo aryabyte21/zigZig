@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 
     // Get user profile and latest portfolio
     const [profileResult, portfoliosResult] = await Promise.all([
-      supabase.from('profiles').select('*').single(),
+      supabase.from('profiles').select('*').eq('id', user.id).single(),
       supabase.from('portfolios').select('content').eq('user_id', user.id).order('updated_at', { ascending: false }).limit(1)
     ]);
 

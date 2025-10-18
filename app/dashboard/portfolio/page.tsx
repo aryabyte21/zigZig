@@ -7,10 +7,18 @@ import Link from "next/link";
 export default async function PortfolioPage() {
   const supabase = await createClient();
   
-  // Get user's portfolios (ordered by creation date, newest first)
+  // Get authenticated user
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
+  
+  // Get user's portfolios (ordered by creation date, newest first) - SECURITY FIX: Filter by user_id
   const { data: portfolios } = await supabase
     .from("portfolios")
     .select("id,title,description,slug,is_published,updated_at,created_at")
+    .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
 

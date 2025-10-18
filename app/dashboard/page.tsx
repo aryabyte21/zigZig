@@ -2,7 +2,6 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { JobRecommendations } from "@/components/job-recommendations";
 import { PortfolioList } from "@/components/portfolio-list";
 import { ChatWidget } from "@/components/chat-widget";
@@ -12,22 +11,32 @@ import { User, FileText, ExternalLink, Plus, Sparkles, Search, Target, MessageSq
 export default async function DashboardPage() {
   const supabase = await createClient();
   
+  // Get authenticated user
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
+  
   // Get user profile
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")
+    .eq("id", user.id)
     .single();
 
-  // Get user's portfolios (ordered by creation date, newest first)
+  // Get user's portfolios (ordered by creation date, newest first) - SECURITY FIX: Filter by user_id
   const { data: portfolios } = await supabase
     .from("portfolios")
     .select("*")
+    .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
-  // Get user's resumes
+  // Get user's resumes - SECURITY FIX: Filter by user_id
   const { data: resumes } = await supabase
     .from("resumes")
     .select("*")
+    .eq("user_id", user.id)
     .order("updated_at", { ascending: false });
 
   // Check if user needs onboarding

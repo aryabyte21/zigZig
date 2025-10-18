@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
 
     // Get user profile for personalized matching
     const [profileResult, portfoliosResult] = await Promise.all([
-      supabase.from('profiles').select('*').single(),
+      supabase.from('profiles').select('*').eq('id', user.id).single(),
       supabase.from('portfolios').select('content, updated_at').eq('user_id', user.id).order('updated_at', { ascending: false }).limit(1)
     ]);
 
