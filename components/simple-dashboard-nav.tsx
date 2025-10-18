@@ -16,16 +16,17 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { LogoutButton } from "@/components/logout-button";
-import { 
-  User, 
-  Layout, 
-  FileText, 
-  Search, 
-  Sparkles, 
+import {
+  User,
+  Layout,
+  FileText,
+  Search,
+  Sparkles,
   Menu,
   Settings,
   MessageSquare,
-  Inbox
+  Inbox,
+  Briefcase
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMemo, useState, useEffect } from "react";
@@ -49,6 +50,7 @@ export function SimpleDashboardNav({ user }: SimpleDashboardNavProps) {
     { href: "/dashboard/portfolio", label: "Portfolio", icon: FileText },
     { href: "/dashboard/jobs", label: "Jobs", icon: Search },
     { href: "/dashboard/jobs-chat", label: "AI Chat", icon: MessageSquare },
+    { href: "/dashboard/hiring", label: "Hiring", icon: Briefcase },
     { href: "/dashboard/inbox", label: "SuperDM Inbox", icon: Inbox },
   ], []);
 

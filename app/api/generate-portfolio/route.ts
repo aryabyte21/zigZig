@@ -142,29 +142,12 @@ export async function POST(request: NextRequest) {
       }, { status: 500 });
     }
 
-    // Generate unique slug
+    // Generate unique slug with retry logic to handle race conditions
     const baseSlug = (enhancedContent?.personalInfo?.name || enhancedContent?.name || user.email?.split('@')[0] || 'portfolio')
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');
     
-    let slug = baseSlug;
-    let counter = 1;
-    
-    // Ensure slug is unique
-    while (true) {
-      const { data: existing } = await supabase
-        .from('portfolios')
-        .select('id')
-        .eq('slug', slug)
-        .single();
-      
-      if (!existing) break;
-      
-      slug = `${baseSlug}-${counter}`;
-      counter++;
-    }
-
     // First, deactivate any existing active portfolios
     await supabase
       .from('portfolios')
@@ -172,24 +155,52 @@ export async function POST(request: NextRequest) {
       .eq('user_id', user.id)
       .eq('is_published', true);
 
-    // Now create new portfolio as active (always set as published)
-    const { data: portfolio, error } = await supabase
-      .from('portfolios')
-      .insert({
-        user_id: user.id,
-        title: `${portfolioContent.name}'s Portfolio`,
-        description: `Professional portfolio of ${portfolioContent.name}`,
-        slug: slug,
-        content: portfolioContent,
-        is_published: true, // Always set new portfolio as active
-      })
-      .select()
-      .single();
+    // Try to create portfolio with unique slug, retrying if duplicate
+    let portfolio;
+    let portfolioError;
+    let counter = 0;
+    const maxRetries = 10;
 
-    if (error) {
-      console.error('Portfolio creation error:', error);
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      const slug = counter === 0 ? baseSlug : `${baseSlug}-${counter}`;
+      
+      const { data, error } = await supabase
+        .from('portfolios')
+        .insert({
+          user_id: user.id,
+          title: `${portfolioContent.name}'s Portfolio`,
+          description: `Professional portfolio of ${portfolioContent.name}`,
+          slug: slug,
+          content: portfolioContent,
+          is_published: true, // Always set new portfolio as active
+        })
+        .select()
+        .single();
+
+      // Check if we hit a duplicate slug error
+      if (error && error.code === '23505' && error.message.includes('portfolios_slug_key')) {
+        console.log(`Slug '${slug}' already exists, trying with counter ${counter + 1}`);
+        counter++;
+        continue;
+      }
+
+      // Either success or a different error
+      portfolio = data;
+      portfolioError = error;
+      break;
+    }
+
+    if (portfolioError) {
+      console.error('Portfolio creation error:', portfolioError);
       return NextResponse.json({ 
         error: "Failed to create portfolio" 
+      }, { status: 500 });
+    }
+
+    if (!portfolio) {
+      console.error('Portfolio creation failed: max retries reached');
+      return NextResponse.json({ 
+        error: "Failed to create portfolio with unique slug" 
       }, { status: 500 });
     }
 

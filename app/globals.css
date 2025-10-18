@@ -138,3 +138,20 @@
     background: hsl(var(--foreground));
   }
 }
+
+/* Fix dialog z-index to appear above everything */
+[data-radix-dialog-overlay] {
+  z-index: 9998 !important;
+}
+
+[data-radix-dialog-content] {
+  z-index: 9999 !important;
+}
+
+[data-radix-alert-dialog-overlay] {
+  z-index: 9998 !important;
+}
+
+[data-radix-alert-dialog-content] {
+  z-index: 9999 !important;
+}

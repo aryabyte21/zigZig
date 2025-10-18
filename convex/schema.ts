@@ -102,6 +102,43 @@ export default defineSchema({
     status: v.union(v.literal("online"), v.literal("away")),
     lastSeen: v.number(),
   }).index("by_user", ["userId"]),
+
+  // Recruiter Matching System
+  cached_portfolios: defineTable({
+    userId: v.string(), // Supabase user ID
+    portfolioId: v.string(), // Supabase portfolio ID
+    parsedData: v.any(), // ParsedPortfolioData from portfolio-parser.ts
+    lastUpdated: v.number(),
+    isActive: v.boolean(), // is_published status from Supabase
+  }).index("by_user", ["userId"])
+    .index("by_active", ["isActive", "lastUpdated"]),
+
+  candidate_matches: defineTable({
+    jobId: v.string(), // Supabase job_postings.id
+    candidateUserId: v.string(),
+    portfolioId: v.string(),
+    matchScore: v.number(), // 0-100
+    matchReasons: v.array(v.string()), // Why they're a good fit
+    matchDetails: v.any(), // Detailed breakdown: skill matches, experience fit, etc.
+    status: v.union(
+      v.literal("pending"),
+      v.literal("liked"),
+      v.literal("passed"),
+      v.literal("super_liked")
+    ),
+    viewedAt: v.optional(v.number()),
+    decidedAt: v.optional(v.number()),
+  }).index("by_job_and_score", ["jobId", "matchScore"])
+    .index("by_job_and_status", ["jobId", "status"])
+    .index("by_candidate", ["candidateUserId"]),
+
+  recruiter_activity: defineTable({
+    userId: v.string(),
+    jobId: v.string(),
+    action: v.string(), // "view_candidate", "like", "pass", "super_like"
+    candidateUserId: v.string(),
+    timestamp: v.number(),
+  }).index("by_user_and_job", ["userId", "jobId", "timestamp"]),
 });
 
 

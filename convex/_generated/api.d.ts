@@ -12,6 +12,7 @@ import type * as email from "../email.js";
 import type * as jobs from "../jobs.js";
 import type * as messaging from "../messaging.js";
 import type * as presence from "../presence.js";
+import type * as recruiter from "../recruiter.js";
 
 import type {
   ApiFromModules,
@@ -32,6 +33,7 @@ declare const fullApi: ApiFromModules<{
   jobs: typeof jobs;
   messaging: typeof messaging;
   presence: typeof presence;
+  recruiter: typeof recruiter;
 }>;
 declare const fullApiWithMounts: typeof fullApi;
 
