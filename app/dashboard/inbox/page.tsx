@@ -14,12 +14,12 @@ export default async function InboxPage() {
   }
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="fixed inset-0 top-16 flex flex-col">
       <div className="flex-shrink-0 p-6 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <h1 className="text-2xl font-semibold">Inbox</h1>
         <p className="text-muted-foreground">Manage your SuperDM conversations</p>
       </div>
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 min-h-0">
         <InboxDashboard userId={user.id} />
       </div>
     </div>

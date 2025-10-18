@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -302,7 +301,7 @@ export function SuperDMChat({ portfolioUserId, portfolioOwnerName, onClose }: Su
         </div>
 
         {/* Step Content */}
-        <ScrollArea className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto">
           <div className="p-4 space-y-4">
             {currentStep === 0 && (
             <div className="space-y-4">
@@ -329,8 +328,8 @@ export function SuperDMChat({ portfolioUserId, portfolioOwnerName, onClose }: Su
                   />
                 </div>
                 {companySuggestions.length > 0 && (
-                  <Card className="absolute z-10 w-full mt-1 shadow-lg">
-                    <CardContent className="p-2">
+                  <Card className="absolute z-50 w-full mt-1 shadow-lg max-h-40 overflow-hidden">
+                    <CardContent className="p-2 max-h-36 overflow-y-auto">
                       {companySuggestions.map((company, index) => (
                         <Button
                           key={index}
@@ -446,23 +445,25 @@ export function SuperDMChat({ portfolioUserId, portfolioOwnerName, onClose }: Su
 
               {/* AI Autocompletions */}
               {autocompletions.length > 0 && (
-                <Card>
+                <Card className="max-h-60 overflow-x-hidden overflow-y-hidden">
                   <CardContent className="p-3">
                     <div className="flex items-center mb-2">
                       <Lightbulb className="h-4 w-4 text-primary mr-2" />
                       <span className="text-sm font-medium">AI Suggestions</span>
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-2 max-h-44 overflow-y-auto overflow-x-hidden">
                       {autocompletions.map((suggestion, index) => (
                         <Button
                           key={index}
                           variant="ghost"
                           size="sm"
-                          className="w-full justify-start text-left h-auto p-2"
+                          className="w-full justify-start text-left h-auto p-2 whitespace-normal break-words min-w-0"
                           onClick={() => setMessage(suggestion)}
                         >
                           <ArrowRight className="h-3 w-3 mr-2 flex-shrink-0" />
-                          <span className="text-xs">{suggestion}</span>
+                          <span className="text-xs break-words whitespace-normal leading-relaxed flex-1 min-w-0">
+                            {suggestion}
+                          </span>
                         </Button>
                       ))}
                     </div>
@@ -487,7 +488,7 @@ export function SuperDMChat({ portfolioUserId, portfolioOwnerName, onClose }: Su
             </div>
           )}
           </div>
-        </ScrollArea>
+        </div>
 
         {/* Footer Actions */}
         <div className="p-4 border-t bg-muted/20 flex-shrink-0">
@@ -528,9 +529,9 @@ export function SuperDMChat({ portfolioUserId, portfolioOwnerName, onClose }: Su
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full max-h-full overflow-hidden">
       {/* Messages Area */}
-      <ScrollArea className="flex-1 p-4">
+      <div className="flex-1 overflow-y-auto p-4">
         <div className="space-y-4">
           {messages?.messages?.map((msg: Message) => (
             <div
@@ -621,7 +622,7 @@ export function SuperDMChat({ portfolioUserId, portfolioOwnerName, onClose }: Su
           
           <div ref={messagesEndRef} />
         </div>
-      </ScrollArea>
+      </div>
 
       {/* Input Area */}
       <div className="border-t p-4 flex-shrink-0">
@@ -662,12 +663,12 @@ export function SuperDMChat({ portfolioUserId, portfolioOwnerName, onClose }: Su
 
         {/* Smart Quick Actions */}
         {hasIntroduced && (
-          <div className="flex flex-wrap gap-2 mt-3">
+          <div className="flex flex-wrap gap-2 mt-3 max-h-16 overflow-y-auto">
             <Button
               variant="outline"
               size="sm"
               onClick={() => setMessage("Thanks for your response! When would be a good time for a quick call?")}
-              className="text-xs"
+              className="text-xs whitespace-nowrap"
             >
               📅 Schedule Call
             </Button>
@@ -675,7 +676,7 @@ export function SuperDMChat({ portfolioUserId, portfolioOwnerName, onClose }: Su
               variant="outline"
               size="sm"
               onClick={() => setMessage("Could you share more details about your experience with [specific technology]?")}
-              className="text-xs"
+              className="text-xs whitespace-nowrap"
             >
               🔍 Learn More
             </Button>
@@ -683,7 +684,7 @@ export function SuperDMChat({ portfolioUserId, portfolioOwnerName, onClose }: Su
               variant="outline"
               size="sm"
               onClick={() => setMessage("I'd love to see some examples of your work in this area.")}
-              className="text-xs"
+              className="text-xs whitespace-nowrap"
             >
               👀 See Examples
             </Button>

@@ -140,9 +140,9 @@ export function InboxDashboard({ userId }: InboxDashboardProps) {
   const selectedConv = conversations?.find(c => c._id === selectedConversation);
 
   return (
-    <div className="flex h-full bg-background">
+    <div className="flex h-full max-h-full bg-background">
       {/* Conversations Sidebar */}
-      <div className="w-80 border-r border-border flex flex-col flex-shrink-0">
+      <div className="w-80 border-r border-border flex flex-col flex-shrink-0 max-h-full">
         {/* Search */}
         <div className="p-4 border-b border-border">
           <div className="relative">
@@ -246,11 +246,11 @@ export function InboxDashboard({ userId }: InboxDashboardProps) {
       </div>
 
       {/* Message View */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-h-0 max-h-full">
         {selectedConv ? (
           <>
             {/* Header */}
-            <div className="p-6 border-b border-border bg-gradient-to-r from-background to-muted/20 flex items-center justify-between">
+            <div className="flex-shrink-0 p-6 border-b border-border bg-gradient-to-r from-background to-muted/20 flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <Avatar className="h-12 w-12">
                   <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
@@ -298,102 +298,104 @@ export function InboxDashboard({ userId }: InboxDashboardProps) {
             </div> */}
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-b from-muted/5 to-background min-h-0">
-              <div className="space-y-4 max-w-4xl mx-auto" style={{ minHeight: 'calc(100vh - 300px)' }}>
-                {!messages ? (
-                  // Loading skeleton for messages
-                  Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className={`flex gap-3 ${i % 2 === 0 ? "flex-row-reverse" : ""}`}>
-                      <Skeleton className="h-8 w-8 rounded-full flex-shrink-0" />
-                      <div className={`max-w-[70%] ${i % 2 === 0 ? "text-right" : ""}`}>
-                        <Skeleton className={`h-12 rounded-2xl ${i % 2 === 0 ? "w-48" : "w-36"}`} />
-                        <Skeleton className="h-3 w-16 mt-2" />
-                      </div>
-                    </div>
-                  ))
-                ) : messages.messages?.length > 0 ? (
-                  messages.messages.map((message: any) => {
-                    const isOwner = message.senderId === userId;
-                    
-                    return (
-                      <div
-                        key={message._id}
-                        className={`flex gap-3 ${isOwner ? "flex-row-reverse" : ""}`}
-                      >
-                        <Avatar className="h-8 w-8 flex-shrink-0">
-                          <AvatarFallback className={
-                            message.aiGenerated 
-                              ? "bg-primary text-primary-foreground" 
-                              : isOwner
-                              ? "bg-primary/10 text-primary"
-                              : "bg-muted"
-                          }>
-                            {message.aiGenerated ? (
-                              <Bot className="h-4 w-4" />
-                            ) : (
-                              message.senderName.charAt(0).toUpperCase()
-                            )}
-                          </AvatarFallback>
-                        </Avatar>
-
-                        <div className={`max-w-[70%] ${isOwner ? "text-right" : ""}`}>
-                          {/* Sender name for consecutive messages */}
-                          {!isOwner && (
-                            <p className="text-xs font-medium text-muted-foreground mb-1 px-1">
-                              {message.senderName}
-                            </p>
-                          )}
-                          
-                          <div className={`
-                            rounded-2xl px-4 py-3 text-sm shadow-sm border-0 transition-all duration-200
-                            ${isOwner 
-                              ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-blue-500/25" 
-                              : "bg-white border border-gray-200 text-gray-900 shadow-gray-200/50"
-                            }
-                          `}>
-                            <p className="whitespace-pre-wrap leading-relaxed">
-                              {message.content}
-                            </p>
-                          </div>
-                          
-                          <div className={`flex items-center gap-2 mt-2 px-1 ${isOwner ? "justify-end" : ""}`}>
-                            <span className="text-xs text-muted-foreground">
-                              {new Date(message._creationTime).toLocaleTimeString([], { 
-                                hour: '2-digit', 
-                                minute: '2-digit' 
-                              })}
-                            </span>
-                            
-                            {message.aiGenerated && (
-                              <Badge variant="secondary" className="text-xs bg-purple-100 text-purple-700 border-purple-200">
-                                <Bot className="h-3 w-3 mr-1" />
-                                AI
-                              </Badge>
-                            )}
-                            
-                            {isOwner && message.readAt && (
-                              <div className="text-xs text-blue-600 flex items-center gap-0.5">
-                                <CheckCheck className="h-3 w-3" />
-                                Read
-                              </div>
-                            )}
-                          </div>
+            <div className="flex-1 overflow-hidden bg-gradient-to-b from-muted/5 to-background min-h-0">
+              <div className="h-full overflow-y-auto p-6">
+                <div className="space-y-4 max-w-4xl mx-auto pb-4">
+                  {!messages ? (
+                    // Loading skeleton for messages
+                    Array.from({ length: 4 }).map((_, i) => (
+                      <div key={i} className={`flex gap-3 ${i % 2 === 0 ? "flex-row-reverse" : ""}`}>
+                        <Skeleton className="h-8 w-8 rounded-full flex-shrink-0" />
+                        <div className={`max-w-[70%] ${i % 2 === 0 ? "text-right" : ""}`}>
+                          <Skeleton className={`h-12 rounded-2xl ${i % 2 === 0 ? "w-48" : "w-36"}`} />
+                          <Skeleton className="h-3 w-16 mt-2" />
                         </div>
                       </div>
-                    );
-                  })
-                ) : (
-                  <div className="flex-1 flex items-center justify-center py-8">
-                    <div className="text-center">
-                      <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold mb-2">Start the conversation</h3>
-                      <p className="text-muted-foreground">
-                        Send a message to begin your professional dialogue
-                      </p>
+                    ))
+                  ) : messages.messages?.length > 0 ? (
+                    messages.messages.map((message: any) => {
+                      const isOwner = message.senderId === userId;
+                      
+                      return (
+                        <div
+                          key={message._id}
+                          className={`flex gap-3 ${isOwner ? "flex-row-reverse" : ""}`}
+                        >
+                          <Avatar className="h-8 w-8 flex-shrink-0">
+                            <AvatarFallback className={
+                              message.aiGenerated 
+                                ? "bg-primary text-primary-foreground" 
+                                : isOwner
+                                ? "bg-primary/10 text-primary"
+                                : "bg-muted"
+                            }>
+                              {message.aiGenerated ? (
+                                <Bot className="h-4 w-4" />
+                              ) : (
+                                message.senderName.charAt(0).toUpperCase()
+                              )}
+                            </AvatarFallback>
+                          </Avatar>
+
+                          <div className={`max-w-[70%] ${isOwner ? "text-right" : ""}`}>
+                            {/* Sender name for consecutive messages */}
+                            {!isOwner && (
+                              <p className="text-xs font-medium text-muted-foreground mb-1 px-1">
+                                {message.senderName}
+                              </p>
+                            )}
+                            
+                            <div className={`
+                              rounded-2xl px-4 py-3 text-sm shadow-sm border-0 transition-all duration-200
+                              ${isOwner 
+                                ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-blue-500/25" 
+                                : "bg-white border border-gray-200 text-gray-900 shadow-gray-200/50"
+                              }
+                            `}>
+                              <p className="whitespace-pre-wrap leading-relaxed">
+                                {message.content}
+                              </p>
+                            </div>
+                            
+                            <div className={`flex items-center gap-2 mt-2 px-1 ${isOwner ? "justify-end" : ""}`}>
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(message._creationTime).toLocaleTimeString([], { 
+                                  hour: '2-digit', 
+                                  minute: '2-digit' 
+                                })}
+                              </span>
+                              
+                              {message.aiGenerated && (
+                                <Badge variant="secondary" className="text-xs bg-purple-100 text-purple-700 border-purple-200">
+                                  <Bot className="h-3 w-3 mr-1" />
+                                  AI
+                                </Badge>
+                              )}
+                              
+                              {isOwner && message.readAt && (
+                                <div className="text-xs text-blue-600 flex items-center gap-0.5">
+                                  <CheckCheck className="h-3 w-3" />
+                                  Read
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="h-full flex items-center justify-center">
+                      <div className="text-center">
+                        <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                        <h3 className="text-lg font-semibold mb-2">Start the conversation</h3>
+                        <p className="text-muted-foreground">
+                          Send a message to begin your professional dialogue
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                )}
-                <div ref={messagesEndRef} />
+                  )}
+                  <div ref={messagesEndRef} />
+                </div>
               </div>
             </div>
 
