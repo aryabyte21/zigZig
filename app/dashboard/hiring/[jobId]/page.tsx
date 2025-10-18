@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
 import { RecruiterCardStack } from "@/components/recruiter-card-stack";
 import { RecruiterMatchList } from "@/components/recruiter-match-list";
 import { ArrowLeft, Users, Heart, Star, X, TrendingUp } from "lucide-react";
@@ -91,10 +92,51 @@ export default function JobMatchingPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[600px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading job details...</p>
+      <div className="space-y-4">
+        {/* Header Skeleton */}
+        <div className="flex items-center justify-between pb-4 border-b">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-9 w-9 rounded-md" />
+            <div>
+              <Skeleton className="h-6 w-48 mb-2" />
+              <Skeleton className="h-4 w-32" />
+            </div>
+          </div>
+          <Card className="px-4 py-2">
+            <div className="flex items-center gap-4">
+              <Skeleton className="h-4 w-12" />
+              <Skeleton className="h-4 w-12" />
+              <Skeleton className="h-4 w-12" />
+              <Skeleton className="h-4 w-12" />
+            </div>
+          </Card>
+        </div>
+
+        {/* Tabs Skeleton */}
+        <div className="space-y-8">
+          <Skeleton className="h-10 w-full max-w-md" />
+          
+          {/* Card Stack Skeleton */}
+          <div className="flex justify-center">
+            <div className="w-full max-w-md">
+              <Card className="p-6 space-y-4">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-16 w-16 rounded-full" />
+                  <div className="flex-1">
+                    <Skeleton className="h-6 w-32 mb-2" />
+                    <Skeleton className="h-4 w-24" />
+                  </div>
+                </div>
+                <Skeleton className="h-20 w-full" />
+                <div className="flex flex-wrap gap-2">
+                  <Skeleton className="h-6 w-16" />
+                  <Skeleton className="h-6 w-20" />
+                  <Skeleton className="h-6 w-18" />
+                </div>
+                <Skeleton className="h-16 w-full" />
+              </Card>
+            </div>
+          </div>
         </div>
       </div>
     );
