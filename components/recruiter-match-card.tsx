@@ -100,52 +100,55 @@ export function RecruiterMatchCard({ match, onSwipe, style }: RecruiterMatchCard
         </motion.div>
 
         <CardContent className="p-6 h-full flex flex-col">
-          {/* Avatar and Match Score */}
-          <div className="flex items-start justify-between mb-6">
-            <Avatar className="h-40 w-40 border-4 border-white shadow-xl ring-2 ring-primary/20">
-              <AvatarImage src={match.candidateAvatar} alt={match.candidateName} />
-              <AvatarFallback className="text-5xl font-bold bg-gradient-to-br from-blue-500 to-purple-500 text-white">
-                {match.candidateName?.charAt(0)?.toUpperCase() || "?"}
-              </AvatarFallback>
-            </Avatar>
+          {/* Header Section with Avatar on Right */}
+          <div className="flex gap-6 mb-6">
+            {/* Left Side - Candidate Info */}
+            <div className="flex-1 space-y-4">
+              <div className="space-y-3">
+                <h2 className="text-3xl font-bold text-foreground leading-tight">
+                  {match.candidateName || "Candidate"}
+                </h2>
+                
+                <p className="text-sm text-muted-foreground flex items-center gap-2">
+                  <MapPin className="h-4 w-4" />
+                  {match.candidateLocation || "Location not specified"}
+                </p>
+                
+                {match.candidatePortfolioSlug && (
+                  <a
+                    href={`/portfolio/${match.candidatePortfolioSlug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline relative z-50 cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      window.open(`/portfolio/${match.candidatePortfolioSlug}`, '_blank');
+                    }}
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onTouchStart={(e) => e.stopPropagation()}
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    View Full Portfolio
+                  </a>
+                )}
+                
+                <Badge className={`${getScoreColor(match.matchScore)} text-white text-sm px-2 py-1 font-medium shadow-md w-fit`}>
+                  {match.matchScore}%
+                </Badge>
+              </div>
+            </div>
 
-            <Badge className={`${getScoreColor(match.matchScore)} text-white text-base px-3 py-1.5 font-bold shadow-lg`}>
-              {match.matchScore}%
-            </Badge>
-          </div>
-
-          {/* Candidate Info */}
-          <div className="space-y-3 mb-4">
-            <h2 className="text-2xl font-bold text-foreground">
-              {match.candidateName || "Candidate"}
-            </h2>
-            <p className="text-lg text-muted-foreground flex items-center gap-2">
-              <Briefcase className="h-5 w-5" />
-              {match.candidateTitle || "Professional"}
-            </p>
-            <p className="text-sm text-muted-foreground flex items-center gap-2">
-              <MapPin className="h-4 w-4" />
-              {match.candidateLocation || "Location not specified"}
-            </p>
-            {match.candidatePortfolioSlug && (
-              <a
-                href={`/portfolio/${match.candidatePortfolioSlug}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline relative z-50 cursor-pointer"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  window.open(`/portfolio/${match.candidatePortfolioSlug}`, '_blank');
-                }}
-                onPointerDown={(e) => e.stopPropagation()}
-                onMouseDown={(e) => e.stopPropagation()}
-                onTouchStart={(e) => e.stopPropagation()}
-              >
-                <ExternalLink className="h-4 w-4" />
-                View Full Portfolio
-              </a>
-            )}
+            {/* Right Side - Even Bigger Avatar */}
+            <div className="flex-shrink-0">
+              <Avatar className="h-56 w-56 border-4 border-white shadow-2xl ring-4 ring-primary/10">
+                <AvatarImage src={match.candidateAvatar} alt={match.candidateName} />
+                <AvatarFallback className="text-8xl font-bold bg-gradient-to-br from-blue-500 to-purple-500 text-white">
+                  {match.candidateName?.charAt(0)?.toUpperCase() || "?"}
+                </AvatarFallback>
+              </Avatar>
+            </div>
           </div>
 
           {/* Social Links & Education */}

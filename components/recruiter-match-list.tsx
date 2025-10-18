@@ -39,7 +39,7 @@ export function RecruiterMatchList({ matches, title, emptyMessage }: RecruiterMa
             <CardContent className="p-6">
               <div className="flex items-start gap-4">
                 {/* Avatar */}
-                <Avatar className="h-16 w-16 border-2 border-white shadow-lg">
+                <Avatar className="h-36 w-36 border-2 border-white shadow-lg">
                   <AvatarImage src={match.candidateAvatar} alt={match.candidateName} />
                   <AvatarFallback className="text-xl font-bold bg-gradient-to-br from-blue-500 to-purple-500 text-white">
                     {match.candidateName?.charAt(0)?.toUpperCase() || "?"}

@@ -85,7 +85,7 @@ export function SignUpForm({
         <CardHeader>
           <CardTitle className="text-2xl flex items-center gap-2">
             <Sparkles className="h-6 w-6 text-blue-600" />
-            Join ZigZig
+            Join zigZig
           </CardTitle>
           <CardDescription>
             Start building your AI-powered career today

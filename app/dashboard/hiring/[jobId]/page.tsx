@@ -119,10 +119,10 @@ export default function JobMatchingPage() {
     );
   }
 
-  const pendingCount = stats?.pending || 0;
-  const likedCount = stats?.liked || 0;
-  const superLikedCount = stats?.super_liked || 0;
-  const passedCount = stats?.passed || 0;
+  const pendingCount = stats?.pending_count || 0;
+  const likedCount = stats?.liked_count || 0;
+  const superLikedCount = stats?.super_liked_count || 0;
+  const passedCount = stats?.passed_count || 0;
 
   return (
     <div className="space-y-4">
@@ -229,7 +229,11 @@ export default function JobMatchingPage() {
 
         <TabsContent value="liked" className="mt-8">
           {matches && matches.length > 0 ? (
-            <RecruiterMatchList matches={matches as CandidateMatch[]} />
+            <RecruiterMatchList 
+              matches={matches as CandidateMatch[]} 
+              title="Liked Candidates"
+              emptyMessage="No liked candidates yet"
+            />
           ) : (
             <div className="text-center py-20">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
@@ -245,8 +249,11 @@ export default function JobMatchingPage() {
 
         <TabsContent value="super_liked" className="mt-8">
           {matches && matches.length > 0 ? (
-            <RecruiterMatchList matches={matches as CandidateMatch[]} />
-          ) : (
+          <RecruiterMatchList 
+          matches={matches as CandidateMatch[]} 
+          title="Liked Candidates"
+          emptyMessage="No liked candidates yet"
+        />          ) : (
             <div className="text-center py-20">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-4">
                 <Star className="h-8 w-8 text-blue-600" />
@@ -261,8 +268,11 @@ export default function JobMatchingPage() {
 
         <TabsContent value="passed" className="mt-8">
           {matches && matches.length > 0 ? (
-            <RecruiterMatchList matches={matches as CandidateMatch[]} />
-          ) : (
+          <RecruiterMatchList 
+          matches={matches as CandidateMatch[]} 
+          title="Liked Candidates"
+          emptyMessage="No liked candidates yet"
+        />          ) : (
             <div className="text-center py-20">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
                 <X className="h-8 w-8 text-muted-foreground" />

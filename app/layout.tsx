@@ -11,20 +11,20 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "ZigZig - AI-Powered Career Hub",
-  description: "Build your dream career with AI. Generate portfolios, optimize resumes, find jobs, and land interviews with ZigZig's cutting-edge AI tools.",
+  title: "zigZig - AI-Powered Career Hub",
+  description: "Build your dream career with AI. Generate portfolios, optimize resumes, find jobs, and land interviews with zigZig's cutting-edge AI tools.",
   keywords: ["AI", "career", "portfolio", "resume", "job search", "interview", "professional development"],
-  authors: [{ name: "ZigZig Team" }],
+  authors: [{ name: "zigZig Team" }],
   openGraph: {
-    title: "ZigZig - AI-Powered Career Hub",
+    title: "zigZig - AI-Powered Career Hub",
     description: "Build your dream career with AI. Generate portfolios, optimize resumes, find jobs, and land interviews.",
     url: defaultUrl,
-    siteName: "ZigZig",
+    siteName: "zigZig",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "ZigZig - AI-Powered Career Hub",
+    title: "zigZig - AI-Powered Career Hub",
     description: "Build your dream career with AI. Generate portfolios, optimize resumes, find jobs, and land interviews.",
   },
 };

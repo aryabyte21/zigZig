@@ -49,7 +49,7 @@ export function SimpleDashboardNav({ user }: SimpleDashboardNavProps) {
     { href: "/dashboard/profile", label: "Profile", icon: User },
     { href: "/dashboard/portfolio", label: "Portfolio", icon: FileText },
     { href: "/dashboard/jobs", label: "Jobs", icon: Search },
-    { href: "/dashboard/jobs-chat", label: "AI Chat", icon: MessageSquare },
+    { href: "/dashboard/jobs-chat", label: "zigChat", icon: MessageSquare },
     { href: "/dashboard/hiring", label: "Hiring", icon: Briefcase },
     { href: "/dashboard/inbox", label: "SuperDM Inbox", icon: Inbox },
   ], []);
