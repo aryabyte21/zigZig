@@ -1,4 +1,16 @@
-<div align="center">
+End result of portfolio generation - [https://zigzag-deploy-53af4e7f8-aryaarunbs-projects.vercel.app/portfolio/arya-bhosale-7]
+Hiring is as easy as swiping left and right just on tinder! Powered by [convex](http://convex.dev) & [supabase](http://supabase.com)
+
+<img width="1504" height="858" alt="Screenshot 2025-10-23 at 12 43 08 PM" src="https://github.com/user-attachments/assets/5004ee5e-a667-40d0-ab09-215ff587f5ec" />
+
+Browse through tons of openings tailored for your resume powered by [Exa](http://exa.ai)
+<div align="center"><img width="1504" height="858" alt="Screenshot 2025-10-23 at 12 44 32 PM" src="https://github.com/user-attachments/assets/f13825a6-3664-4889-8cbd-8d84263c408d" />
+  
+  SuperDM, get reached by recruiters in no time powered by  [convex](http://convex.dev) & [supabase](http://supabase.com) & [groq](http://groq.com)
+<img width="1504" height="858" alt="Screenshot 2025-10-23 at 12 47 15 PM" src="https://github.com/user-attachments/assets/2477a369-497d-46f9-a01b-5d4e2f4257c2" />
+<img width="1504" height="858" alt="Screenshot 2025-10-23 at 12 48 48 PM" src="https://github.com/user-attachments/assets/e1591e9c-ef3a-40ab-ae0a-37ee0f419d98" />
+<img width="1107" height="732" alt="Screenshot 2025-10-23 at 12 49 22 PM" src="https://github.com/user-attachments/assets/035e6b1b-3c40-4ec8-ba7c-a430ce241904" />
+
   <h1>zigZig - AI-Powered Career Hub</h1>
   <p>Build your dream career with AI. Generate portfolios, optimize resumes, find jobs, and land interviews.</p>
 </div>
